@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity } from 'react-na
 
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faBars } from '@fortawesome/free-solid-svg-icons'
-import { HomeScreen } from './HomeScreen';
 
 export default class Screen extends Component {
    render() {
