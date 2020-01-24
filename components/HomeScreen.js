@@ -1,31 +1,27 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Button } from 'react-native';
 
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faBars } from '@fortawesome/free-solid-svg-icons'
 
+import LinearGradient from 'react-native-linear-gradient'
+
 export default class HomeScreen extends React.Component {
    render() {
-     return (
+   return (
       <View style={styles.container}>
-      <SafeAreaView style={styles.container}>
          <View style={{ backgroundColor: "#fc5185", borderBottomStartRadius: 50, borderBottomEndRadius: 50, height: 200 }}>
             <TouchableOpacity style={styles.bars} onPress={this.props.navigation.openDrawer}>
                <FontAwesomeIcon icon={faBars} size={24} color="#364f6b" />
             </TouchableOpacity>
          </View>
-         <View style={{ flex:1, alignItems: "center", justifyContent: "center" }}>
-         <Button
-         onPress={() => this.props.navigation.navigate('Setting')}
-         title="Go to Setting"
-         />
+         <View style={{  }}>
+
          </View>
-      </SafeAreaView>
-   </View>
-       
-     );
+      </View>
+      );
    }
- }
+}
 
 const styles = StyleSheet.create({
    container: {
