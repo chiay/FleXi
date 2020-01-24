@@ -1,23 +1,65 @@
 import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Button } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
 
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faBars } from '@fortawesome/free-solid-svg-icons'
+import { faBars, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faCalendarAlt } from '@fortawesome/free-regular-svg-icons';
 
-import LinearGradient from 'react-native-linear-gradient'
+import LinearGradient from 'react-native-linear-gradient';
+
+import AddEventModal from './AddEventModalScreen';
 
 export default class HomeScreen extends React.Component {
+   state = {
+      display: false
+   }
+
+   triggerModal() {
+      this.setState(prevState => {
+         return {
+            display: true
+         }
+      });
+   }
+
    render() {
    return (
-      <View style={styles.container}>
-         <View style={{ backgroundColor: "#fc5185", borderBottomStartRadius: 50, borderBottomEndRadius: 50, height: 200 }}>
-            <TouchableOpacity style={styles.bars} onPress={this.props.navigation.openDrawer}>
-               <FontAwesomeIcon icon={faBars} size={24} color="#364f6b" />
+      <View style={ styles.container }>
+         <View style={ styles.topbar }>
+            <TouchableOpacity style={ styles.bars } onPress={ this.props.navigation.openDrawer }>
+               <FontAwesomeIcon icon={ faBars } size={ 24 } color="#364f6b" />
             </TouchableOpacity>
+            <View style={{ flexDirection:"row" }}>
+               <FontAwesomeIcon style={ styles.dateIcon } icon={ faCalendarAlt } size={ 28 } />
+               <Text style={ styles.date }>
+                  24 Jan., 2020
+               </Text>
+            </View>
+            <View>
+               <Text style={ styles.remain }>
+                  Task(s) remaining for today: 10
+               </Text>
+            </View> 
          </View>
-         <View style={{  }}>
+         <TouchableOpacity style={ styles.buttonTouch } onPress= { () => this.triggerModal() }>
+            <View>
+               <FontAwesomeIcon icon={ faPlus } size={ 35 } color="#364f6b" />
+            </View>
+         </TouchableOpacity>
+         <ScrollView>
+            <TouchableOpacity style={ styles.taskContainer }>
 
-         </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={ styles.taskContainer }>
+
+            </TouchableOpacity>
+            <TouchableOpacity style={ styles.taskContainer }>
+
+            </TouchableOpacity>
+
+         </ScrollView>
+         <AddEventModal display={ this.state.display } closeModal={ () => this.setState({ display: false }) } data="Modal for adding events" />
       </View>
       );
    }
@@ -28,12 +70,55 @@ const styles = StyleSheet.create({
       flex: 1,
       backgroundColor: "#f0f0f0"
    },
+   topbar: {
+      backgroundColor: "#fc5185", 
+      borderBottomStartRadius: 50, 
+      borderBottomEndRadius: 50, 
+      height: 200,
+      marginBottom: 5,
+   },
    bars: {
       alignItems: "flex-start",
-      margin: 16
+      margin: 16,
+      width: 24,
    },
-   text: {
+   date: {
+      fontSize: 28,
+      color: "#364f6b",
+      marginLeft: 10,
+      marginTop: 60,
+   },
+   dateIcon:{
+      color: "#364f6b",
+      marginLeft: 40,
+      marginTop: 66,
+   },
+   remain: {
       fontSize: 20,
-      color: "#161924"
+      color: "#364f6b",
+      opacity: 0.6,
+      marginHorizontal: 40,
+   },
+   buttonTouch: {
+      backgroundColor: "rgba(54, 79, 107, 0.1)",
+      width: 60,
+      height: 60,
+      borderRadius: 50,
+      borderStyle: "solid",
+      marginTop: Dimensions.get("window").height * 0.85,
+      marginLeft: Dimensions.get("window").width * 0.78,
+      alignItems: "center",
+      justifyContent: "center",
+      position: "absolute",
+      zIndex: 1,
+   },
+   taskContainer: {
+      borderRadius: 10,
+      backgroundColor: "#574b90",
+      width: Dimensions.get("window").width * 0.98,
+      height: 80,
+      marginVertical: 5,
+      marginHorizontal: 4,
+      opacity: 0.8,
    }
 })
