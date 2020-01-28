@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Alert } from 'react-native';
 
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faBars, faPlus } from '@fortawesome/free-solid-svg-icons';
@@ -10,8 +10,12 @@ import LinearGradient from 'react-native-linear-gradient';
 import AddEventModal from './AddEventModalScreen';
 
 export default class HomeScreen extends React.Component {
-   state = {
-      display: false
+   constructor(props) {
+      super(props);
+      this.state = {
+         date: '',
+         display: false,
+      };
    }
 
    triggerModal() {
@@ -19,6 +23,17 @@ export default class HomeScreen extends React.Component {
          return {
             display: true
          }
+      });
+   }
+
+   componentDidMount() {
+      const date = new Date().getDate();
+      const month = new Date().getMonth();
+      const year = new Date().getFullYear();
+      const month_str = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+      this.setState({  
+         date: date + ' ' + month_str[month] + '. ' + year,
       });
    }
 
@@ -32,7 +47,7 @@ export default class HomeScreen extends React.Component {
             <View style={{ flexDirection:"row" }}>
                <FontAwesomeIcon style={ styles.dateIcon } icon={ faCalendarAlt } size={ 28 } />
                <Text style={ styles.date }>
-                  24 Jan., 2020
+                  {this.state.date}
                </Text>
             </View>
             <View>
