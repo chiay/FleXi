@@ -2,13 +2,13 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, Dimensions } from 'react-native';
 
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faCogs, faTimes } from '@fortawesome/free-solid-svg-icons'
+import { faCogs, faTimes } from '@fortawesome/free-solid-svg-icons';
 
 export default class SettingScreen extends React.Component {
    renderSeparator = () => {
       return (
          <View style={{ 
-            height:1, 
+            height: 1, 
             width: "85%",
             marginLeft: "8%",
             backgroundColor: "#CED0CE" }}/>
@@ -29,7 +29,7 @@ export default class SettingScreen extends React.Component {
                   {key: 'Rules'},
                   {key: 'Notifications'},
                   ]}
-            renderItem={({ item }) => <TouchableOpacity><Text style={ styles.item }>{ item.key }</Text></TouchableOpacity>}
+            renderItem={ ({ item }) => <TouchableOpacity onPress={ () => this.props.navigation.navigate( item.key ) }><Text style={ styles.item }>{ item.key }</Text></TouchableOpacity> }
             ItemSeparatorComponent={ this.renderSeparator }
             keyExtractor={ item => item.key }
             />

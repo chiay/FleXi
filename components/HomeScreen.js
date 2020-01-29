@@ -7,23 +7,12 @@ import { faCalendarAlt } from '@fortawesome/free-regular-svg-icons';
 
 import LinearGradient from 'react-native-linear-gradient';
 
-import AddEventModal from './AddEventModalScreen';
-
 export default class HomeScreen extends React.Component {
    constructor(props) {
       super(props);
       this.state = {
          date: '',
-         display: false,
       };
-   }
-
-   triggerModal() {
-      this.setState(prevState => {
-         return {
-            display: true
-         }
-      });
    }
 
    componentDidMount() {
@@ -47,7 +36,7 @@ export default class HomeScreen extends React.Component {
             <View style={{ flexDirection:"row" }}>
                <FontAwesomeIcon style={ styles.dateIcon } icon={ faCalendarAlt } size={ 28 } />
                <Text style={ styles.date }>
-                  {this.state.date}
+                  { this.state.date }
                </Text>
             </View>
             <View>
@@ -56,7 +45,7 @@ export default class HomeScreen extends React.Component {
                </Text>
             </View> 
          </View>
-         <TouchableOpacity style={ styles.buttonTouch } onPress= { () => this.triggerModal() }>
+         <TouchableOpacity style={ styles.buttonTouch } onPress= { () => this.props.navigation.navigate('AddEvent') }>
             <View>
                <FontAwesomeIcon icon={ faPlus } size={ 35 } color="#364f6b" />
             </View>
@@ -74,7 +63,6 @@ export default class HomeScreen extends React.Component {
             </TouchableOpacity>
 
          </ScrollView>
-         <AddEventModal display={ this.state.display } closeModal={ () => this.setState({ display: false }) } data="Modal for adding events" />
       </View>
       );
    }

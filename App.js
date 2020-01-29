@@ -1,7 +1,9 @@
 import React from 'react';
 import { Dimensions, View, ScrollView, Text, StyleSheet } from 'react-native';
 import { createAppContainer } from 'react-navigation';
+import { createStackNavigator } from 'react-navigation-stack';
 import { createDrawerNavigator, DrawerNavigatorItems } from 'react-navigation-drawer';
+import 'react-native-gesture-handler';
 
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faHome, faCogs } from '@fortawesome/free-solid-svg-icons';
@@ -10,6 +12,9 @@ import LinearGradient from 'react-native-linear-gradient'
 
 import flexiHome from './components/HomeScreen';
 import flexiSetting from './components/SettingScreen';
+import flexiRules from './components/RulesListScreen';
+import flexiNotification from './components/NotificationScreen';
+import flexiAddEvent from './components/AddEventScreen';
 
 const DrawerNavigator = createDrawerNavigator({
    Home: {
@@ -55,6 +60,45 @@ const DrawerNavigator = createDrawerNavigator({
    }
 });
 
+const StackNavigator = createStackNavigator({
+   DrawerNavigator: {
+      screen: DrawerNavigator,
+      navigationOptions: {
+         headerShown: false,
+      }
+   },
+   Rules: {
+      screen: flexiRules,
+      defaultNavigateOptions: {
+         title: "Rules",
+         headerShown: false,
+         headerStyle: {
+            backgroundColor: "#f0f0f0",
+            alignItems: "center",
+            justifyContent: "center",
+            borderBottomColor: "#000",
+            elevation: 3,
+         },
+         headerTitleStyle: {
+            fontSize: 20,
+            fontWeight: "bold",
+            color: "#364f6b",
+         },
+      },
+   },
+   Notifications: {
+      screen: flexiNotification,
+      title: "Notifications",
+   },
+   AddEvent: {
+      screen: flexiAddEvent,
+      title: "AddEvent",
+      navigationOptions: {
+         headerShown: false,
+      },
+   },
+});
+
 const styles = StyleSheet.create({
    container:{
       flex: 1
@@ -73,4 +117,4 @@ const styles = StyleSheet.create({
 });
 
 
-export default createAppContainer(DrawerNavigator);
+export default createAppContainer(StackNavigator);
