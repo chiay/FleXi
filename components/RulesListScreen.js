@@ -4,6 +4,8 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, FlatL
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 
+import { faTrashAlt } from '@fortawesome/free-regular-svg-icons';
+
 import LinearGradient from 'react-native-linear-gradient';
 import AsyncStorage from '@react-native-community/async-storage';
 
@@ -72,8 +74,14 @@ export default class RulesListScreen extends React.Component {
          <FlatList
             data={ this.state.rules }
             renderItem={ ({ item }) => 
-            <TouchableOpacity>
-               <Text style={ styles.listTitle }>{ item.ruleTitle } - { item.ruleTime }</Text>
+            <TouchableOpacity style={ styles.perRule }>
+               <View style={ styles.perRuleTitleView }>
+                  <Text style={ styles.listTitle }>{ item.ruleTitle }</Text>
+               </View>
+               <View style={ styles.perRuleTimeView }>
+                  <Text style={ styles.listTitle }>{ item.ruleTime }</Text>
+               </View>
+               <FontAwesomeIcon style={{ marginLeft: 80, marginTop: 12 }} icon={faTrashAlt} size={20} color="rgba(54, 79, 107, 0.3)"/>
             </TouchableOpacity>
             }
             ItemSeparatorComponent={ this.renderSeparator }
@@ -135,7 +143,11 @@ const styles = StyleSheet.create({
       marginLeft: 20,
       marginVertical: 10,
    },
-   listTime: {
-
+   perRule: {
+      flexDirection: 'row',
+      width: Dimensions.get("window").width * 0.85,
+   },
+   perRuleTitleView: {
+      width: 150
    },
 })
