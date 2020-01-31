@@ -15,6 +15,7 @@ import flexiSetting from './components/SettingScreen';
 import flexiRules from './components/RulesListScreen';
 import flexiNotification from './components/NotificationScreen';
 import flexiAddEvent from './components/AddEventScreen';
+import flexiAddRule from './components/AddRuleScreen';
 
 const DrawerNavigator = createDrawerNavigator({
    Home: {
@@ -93,6 +94,13 @@ const StackNavigator = createStackNavigator({
    AddEvent: {
       screen: flexiAddEvent,
       title: "AddEvent",
+      navigationOptions: {
+         headerShown: false,
+      },
+   },
+   AddRule: {
+      screen: flexiAddRule,
+      title: "AddRule",
       navigationOptions: {
          headerShown: false,
       },

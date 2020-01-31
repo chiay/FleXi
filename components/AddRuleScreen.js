@@ -8,79 +8,87 @@ Dimensions,
 TextInput,
 Picker,
 Button,
+Alert,
 } from 'react-native';
 
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faCalendarPlus } from '@fortawesome/free-regular-svg-icons';
+import AsyncStorage from '@react-native-community/async-storage';
 
-export default class AddEventScreen extends React.Component {
-   state = {
-      title: '',
-      type: '',
-      time: '',
-      location: '',
-      description: '',
-   };
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { faPencilRuler } from '@fortawesome/free-solid-svg-icons';
+
+export default class AddRuleScreen extends React.Component {
+   constructor(props) {
+      super(props);
+      this.state = {
+         id: 0,
+         title: '',
+         time: '',
+      };
+   }
+
+   saveRule = async () => {
+      const ruleSetup = {
+         'ruleID': this.state.id,
+         'ruleTitle': this.state.title,
+         'ruleTime': this.state.time,
+      }
+
+      /* Check if rules object exists */
+      const existRules = await AsyncStorage.getItem('rules');
+
+      const length = Object.keys(existRules).length;
+      ruleSetup.ruleID = length + 1;
+
+      let newRule = JSON.parse(existRules);
+      if (!newRule) {
+         newRule = [];
+      }
+
+      /* Add new rule to rules list */
+      newRule.push(ruleSetup);
+
+      try {
+         await AsyncStorage.setItem('rules', JSON.stringify(newRule))
+         .then( () => {
+            Alert.alert('Your rule is saved successfully.');
+            //console.log(JSON.stringify(newRule));
+         } );
+      } catch (error) {
+         Alert.alert('Your rule failed to save. Please try again.');
+      }
+   }
 
    render() {
    return (
       <View style={ styles.container }>
          <View style={ styles.header }>
             <View style={{ flexDirection:"row" }}>
-               <FontAwesomeIcon style={{ marginHorizontal: 10, marginTop: 2 }} icon={faCalendarPlus} size={25} color="#364f6b"/>
-               <Text style={ styles.headerText }>Add to Calendar</Text>
+               <FontAwesomeIcon style={{ marginHorizontal: 10, marginTop: 2 }} icon={faPencilRuler} size={25} color="#364f6b"/>
+               <Text style={ styles.headerText }>Add to Rules</Text>
             </View>
          </View>
          <View style={ styles.formContainer }>
-            <TextInput style={ styles.txtTitle }
-               placeholder="Give me a title..."
+            <TextInput 
+               style={ styles.txtTitle }
+               placeholder="What rule do you want to set?"
+               onChangeText={ (title) => this.setState({ title }) }
+               value={ this.state.title }
             />
-            <Text style={ styles.formTitle }>Type</Text>
-            <Picker style={ styles.picker }
-               selectedValue={ this.state.type }
-               onValueChange={ (itemValue) => this.setState({ type: itemValue }) }
-            >
-               <Picker.Item label="Event" value="Event"/>
-               <Picker.Item label="Meeting" value="Meeting"/>
-               <Picker.Item label="Task" value="Task"/>
-               
-            </Picker>
             
             <View style={ styles.separator } />
 
-            <Text style={ styles.formTitle }>Priority</Text>
-            <Picker style={ styles.picker }
-               selectedValue={ this.state.type }
-               onValueChange={ (itemValue) => this.setState({ type: itemValue }) }
-            >
-               <Picker.Item label="Low" value="Low"/>
-               <Picker.Item label="Average" value="Average"/>
-               <Picker.Item label="Normal" value="Normal"/>
-               <Picker.Item label="High" value="High"/>
-               <Picker.Item label="Urgent" value="Urgent"/>
-               
-            </Picker>
-            
-            <View style={ styles.separator } />
-
-            <TextInput style={ styles.txtTitle }
+            <TextInput 
+               style={ styles.txtTitle }
                placeholder="Time - eg. 01.00-02.00"
                keyboardType="decimal-pad"
-            />
-            <View style={ styles.separator } />
-
-            <TextInput style={ styles.txtTitle }
-               placeholder="Location"
+               onChangeText={ (time) => this.setState({ time }) }
+               value={ this.state.time }
             />
 
             <View style={ styles.separator } />
-
-            <TextInput style={ styles.txtTitle }
-               placeholder="Description (optional)"
-            />
 
             <View style={ styles.buttonContainer }>
-               <View style={ styles.buttonStyle }><Button title="Done" /></View>
+               <View style={ styles.buttonStyle }><Button title="Done" onPress={ () => this.saveRule() } /></View>
                <View style={ styles.buttonStyle }><Button title="Discard" onPress={ () => this.props.navigation.goBack(null) } /></View>
             </View>
          </View>
