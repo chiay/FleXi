@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Alert, FlatList } from 'react-native';
 
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faBars, faPlus } from '@fortawesome/free-solid-svg-icons';
@@ -7,12 +7,43 @@ import { faCalendarAlt } from '@fortawesome/free-regular-svg-icons';
 
 import LinearGradient from 'react-native-linear-gradient';
 
+import AsyncStorage from '@react-native-community/async-storage';
+
 export default class HomeScreen extends React.Component {
    constructor(props) {
       super(props);
       this.state = {
          date: '',
+         taskRemain: 0,
+         events: null,
       };
+   }
+
+   isEmptyList = () => {
+      return (
+         <View style={ styles.emptyMsgSection }>
+            <Text style={ styles.emptyMsg }>
+               No task for today.
+            </Text>
+         </View>
+      );
+   };
+
+   retrieveEvent = async () => {
+
+      try {
+         const buffer = await AsyncStorage.getItem('events');
+         const myEvents = JSON.parse(buffer);
+         const len = Object.keys(myEvents).length;
+         //console.log(length);
+
+         this.setState({ taskRemain: len, events: myEvents });
+         //console.log(this.state.rules);
+
+      } catch (error) {
+         Alert.alert('Fail to retrieve data.');
+         //console.log(error.message);
+      }
    }
 
    componentDidMount() {
@@ -24,7 +55,11 @@ export default class HomeScreen extends React.Component {
       this.setState({  
          date: date + ' ' + month_str[month] + '. ' + year,
       });
+
+      this.retrieveEvent();
    }
+
+   key = (item) => item.eventID.toString();
 
    render() {
    return (
@@ -41,7 +76,7 @@ export default class HomeScreen extends React.Component {
             </View>
             <View>
                <Text style={ styles.remain }>
-                  Task(s) remaining for today: 10
+                  Task(s) remaining for today: { this.state.taskRemain }
                </Text>
             </View> 
          </View>
@@ -50,19 +85,27 @@ export default class HomeScreen extends React.Component {
                <FontAwesomeIcon icon={ faPlus } size={ 35 } color="#364f6b" />
             </View>
          </TouchableOpacity>
-         <ScrollView>
-            <TouchableOpacity style={ styles.taskContainer }>
 
-            </TouchableOpacity>
+         <FlatList
+            data={ this.state.events }
+            renderItem={ ({ item }) =>
+            <View style={ styles.taskContainer }>
+               <TouchableOpacity style={ styles.taskTouch }>
+                  <Text style={ styles.perEventTitleFont}>
+                     { item.eventTitle }
+                  </Text>
+                  <Text style={ styles.perEventDateTime }> 
+                     { item.eventDate } , { item.eventTime }
+                  </Text>
+               </TouchableOpacity>
+               <TouchableOpacity style={ styles.taskRemove }>
 
-            <TouchableOpacity style={ styles.taskContainer }>
-
-            </TouchableOpacity>
-            <TouchableOpacity style={ styles.taskContainer }>
-
-            </TouchableOpacity>
-
-         </ScrollView>
+               </TouchableOpacity>
+            </View>
+            }
+            keyExtractor={ this.key }
+            ListEmptyComponent={ this.isEmptyList }
+         />
       </View>
       );
    }
@@ -123,5 +166,31 @@ const styles = StyleSheet.create({
       marginVertical: 5,
       marginHorizontal: 4,
       opacity: 0.8,
-   }
+   },
+   emptyMsgSection: {
+      alignItems: "center",
+      justifyContent: "center",
+      marginVertical: Dimensions.get("window").height * 0.2,
+   },
+   emptyMsg: {
+      fontSize: 22,
+      opacity: 0.5,
+   },
+   perEventTitleFont: {
+      marginLeft: 30,
+      marginTop: 10,
+      fontSize: 24,
+   },
+   perEventDateTime: {
+      marginTop: 3,
+      marginHorizontal: 30,
+      fontSize: 20,
+      opacity: 0.5,
+   },
+   taskTouch: {
+
+   },
+   taskRemove: {
+
+   },
 })

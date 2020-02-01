@@ -13,7 +13,7 @@ export default class RulesListScreen extends React.Component {
    constructor(props) {
       super(props);
       this.state = {
-         rules: {},
+         rules: null,
       };
    }
 
@@ -22,7 +22,7 @@ export default class RulesListScreen extends React.Component {
       try {
          const buffer = await AsyncStorage.getItem('rules');
          const myRules = JSON.parse(buffer);
-         const length = Object.keys(myRules).length;
+         //const length = Object.keys(myRules).length;
          //console.log(length);
 
          this.setState({ rules: myRules });
@@ -34,11 +34,22 @@ export default class RulesListScreen extends React.Component {
       }
    }
 
-   deleteRule = async () => {
+   deleteRule = async (id) => {
       try {
-         const existRules = await AsyncStorage.getItem('rules');
+         const buffer = await AsyncStorage.getItem('rules');
+         const existRules = JSON.parse(buffer);
+         const index = existRules.map((e) => {return e.ruleID;}).indexOf(id);
+         console.log(index);
+         const newRules = existRules.splice(index+1, 1);
+         console.log(newRules);
+         await AsyncStorage.setItem('rules', JSON.stringify(newRules))
+         .then( () => {
+            Alert.alert('Your rule is deleted successfully.');
+            //console.log(JSON.stringify(newRule));
+         } );
+         
       } catch (error) {
-
+         console.log(error.message);
       }
    }
 
@@ -74,15 +85,33 @@ export default class RulesListScreen extends React.Component {
          <FlatList
             data={ this.state.rules }
             renderItem={ ({ item }) => 
-            <TouchableOpacity style={ styles.perRule }>
-               <View style={ styles.perRuleTitleView }>
-                  <Text style={ styles.listTitle }>{ item.ruleTitle }</Text>
-               </View>
-               <View style={ styles.perRuleTimeView }>
-                  <Text style={ styles.listTitle }>{ item.ruleTime }</Text>
-               </View>
-               <FontAwesomeIcon style={{ marginLeft: 80, marginTop: 12 }} icon={faTrashAlt} size={20} color="rgba(54, 79, 107, 0.3)"/>
-            </TouchableOpacity>
+            <View style={{ flexDirection: 'row' }}>
+               <TouchableOpacity 
+                  style={{ 
+                     flexDirection: 'row',
+                     width: Dimensions.get('window').width * 0.70, 
+                  }}>
+                  <View style={ styles.perRuleTitleView }>
+                     <Text style={ styles.listTitle }>{ item.ruleTitle }</Text>
+                  </View>
+                  <View style={ styles.perRuleTimeView }>
+                     <Text style={ styles.listTitle }>{ item.ruleTime }</Text>
+                  </View>
+               </TouchableOpacity>
+               <TouchableOpacity 
+                  style={{ 
+                     width: Dimensions.get('window').width * 0.08,
+                     marginLeft: 70,
+                  }}
+                  onPress={ () => this.deleteRule(item.ruleID) }>
+                  <FontAwesomeIcon 
+                     style={{ marginTop: 12 }} 
+                     icon={faTrashAlt} 
+                     size={20} 
+                     color="rgba(54, 79, 107, 0.3)"
+                  />
+               </TouchableOpacity>
+            </View>
             }
             ItemSeparatorComponent={ this.renderSeparator }
             keyExtractor={ this.key }
@@ -144,7 +173,6 @@ const styles = StyleSheet.create({
       marginVertical: 10,
    },
    perRule: {
-      flexDirection: 'row',
       width: Dimensions.get("window").width * 0.85,
    },
    perRuleTitleView: {

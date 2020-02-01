@@ -28,16 +28,16 @@ export default class AddRuleScreen extends React.Component {
 
    saveRule = async () => {
       const ruleSetup = {
-         'ruleID': this.state.id,
-         'ruleTitle': this.state.title,
-         'ruleTime': this.state.time,
+         ruleID: this.state.id,
+         ruleTitle: this.state.title,
+         ruleTime: this.state.time,
       }
 
       /* Check if rules object exists */
       const existRules = await AsyncStorage.getItem('rules');
+      //const len = Object.keys(existRules).length;
 
-      const length = Object.keys(existRules).length;
-      ruleSetup.ruleID = length + 1;
+      ruleSetup.ruleID = Math.random();
 
       let newRule = JSON.parse(existRules);
       if (!newRule) {
@@ -51,7 +51,8 @@ export default class AddRuleScreen extends React.Component {
          await AsyncStorage.setItem('rules', JSON.stringify(newRule))
          .then( () => {
             Alert.alert('Your rule is saved successfully.');
-            //console.log(JSON.stringify(newRule));
+            this.props.navigation.goBack(null);
+            console.log(JSON.stringify(newRule));
          } );
       } catch (error) {
          Alert.alert('Your rule failed to save. Please try again.');
