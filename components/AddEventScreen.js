@@ -10,7 +10,12 @@ Picker,
 Button,
 Alert,
 KeyboardAvoidingView,
+TouchableOpacity
 } from 'react-native';
+
+import DateTimePicker from '@react-native-community/datetimepicker';
+
+import moment from 'moment';
 
 import AsyncStorage from '@react-native-community/async-storage';
 
@@ -25,22 +30,58 @@ export default class AddEventScreen extends React.Component {
          title: '',
          type: '',
          priority: '',
-         date: '',
-         time: '',
+         date: new Date(),
+         minTime: new Date(),
+         maxTime: new Date(),
          location: '',
          description: '',
+         show: false,
+         mode: 'date',
       };
+
+   }
+
+   setDate = (event, date) => {
+      this.setState({
+         show: false,
+         date: moment(date).format("YYYY-MM-DD"),
+      });
+      
+      console.log(this.state.date);
+   }
+
+   setMinTime = (event, date) => {
+      this.setState({
+         show: false,
+         minTime: moment(date).format("h.mm a"),
+      });
+      console.log(this.state.minTime);
    }
    
+   showDatePicker = () => {
+      this.show('date');
+   }
+
+   showTimePicker = () => {
+      this.show('time');
+   }
+
+   show = (mode) => {
+      this.setState({
+         show: true,
+         mode,
+      });
+   }
 
    saveEvent = async () => {
       const eventSetup = {
          eventID: this.state.id,
          eventTitle: this.state.title,
-         eventType: this.state.time,
+         eventType: this.state.type,
          eventPriority: this.state.priority,
          eventDate: this.state.date,
-         eventTime: this.state.time,
+         eventMinTime: this.state.minTime,
+         eventMaxTime: this.state.maxTime,
          eventLocation: this.state.location,
          eventDescription: this.state.description,
       }
@@ -72,85 +113,119 @@ export default class AddEventScreen extends React.Component {
    }
 
    render() {
-   return (
-      <KeyboardAvoidingView style={ styles.container } behavior="height" enabled>
-         <View style={ styles.header }>
-            <View style={{ flexDirection:"row" }}>
-               <FontAwesomeIcon style={{ marginHorizontal: 10, marginTop: 2 }} icon={faCalendarPlus} size={25} color="#364f6b"/>
-               <Text style={ styles.headerText }>Add to Calendar</Text>
+      const y = moment(this.state.date).format("YYYY");
+      const m = moment(this.state.date).format("MM");
+      const d = moment(this.state.date).format("DD");
+
+      return (
+         <KeyboardAvoidingView style={ styles.container } behavior="height" enabled>
+            <View style={ styles.header }>
+               <View style={{ flexDirection:"row" }}>
+                  <FontAwesomeIcon style={{ marginHorizontal: 10, marginTop: 2 }} icon={faCalendarPlus} size={25} color="#364f6b"/>
+                  <Text style={ styles.headerText }>Add to Calendar</Text>
+               </View>
             </View>
-         </View>
-         <View style={ styles.formContainer }>
-            <TextInput style={ styles.txtTitle }
-               placeholder="Give me a title..."
-               onChangeText={ (title) => this.setState({ title }) }
-               value={ this.state.title }
-            />
-            <Text style={ styles.formTitle }>Type</Text>
-            <Picker style={ styles.picker }
-               selectedValue={ this.state.type }
-               onValueChange={ (itemValue) => this.setState({ type: itemValue }) }
-            >
-               <Picker.Item label="Event" value="Event"/>
-               <Picker.Item label="Meeting" value="Meeting"/>
-               <Picker.Item label="Task" value="Task"/>
+            <View style={ styles.formContainer }>
+               <TextInput style={ styles.txtTitle }
+                  placeholder="Give me a title..."
+                  onChangeText={ (title) => this.setState({ title }) }
+                  value={ this.state.title }
+               />
+               <Text style={ styles.formTitle }>Type</Text>
+               <Picker style={ styles.picker }
+                  selectedValue={ this.state.type }
+                  onValueChange={ (itemValue) => this.setState({ type: itemValue }) }
+               >
+                  <Picker.Item label="Event" value="Event"/>
+                  <Picker.Item label="Meeting" value="Meeting"/>
+                  <Picker.Item label="Task" value="Task"/>
+                  
+               </Picker>
                
-            </Picker>
-            
-            <View style={ styles.separator } />
+               <View style={ styles.separator } />
 
-            <Text style={ styles.formTitle }>Priority</Text>
-            <Picker style={ styles.picker }
-               selectedValue={ this.state.priority }
-               onValueChange={ (itemValue) => this.setState({ priority: itemValue }) }
-            >
-               <Picker.Item label="Low" value="Low"/>
-               <Picker.Item label="Average" value="Average"/>
-               <Picker.Item label="Normal" value="Normal"/>
-               <Picker.Item label="High" value="High"/>
-               <Picker.Item label="Urgent" value="Urgent"/>
+               <Text style={ styles.formTitle }>Priority</Text>
+               <Picker style={ styles.picker }
+                  selectedValue={ this.state.priority }
+                  onValueChange={ (itemValue) => this.setState({ priority: itemValue }) }
+               >
+                  <Picker.Item label="Low" value="Low"/>
+                  <Picker.Item label="Average" value="Average"/>
+                  <Picker.Item label="Normal" value="Normal"/>
+                  <Picker.Item label="High" value="High"/>
+                  <Picker.Item label="Urgent" value="Urgent"/>
+                  
+               </Picker>
                
-            </Picker>
-            
-            <View style={ styles.separator } />
+               <View style={ styles.separator } />
+               <Text style={ styles.formTitle }>Date</Text>
 
-            <TextInput style={ styles.txtTitle }
-               placeholder="Date - MM - DD - YYYY"
-               keyboardType="decimal-pad"
-               onChangeText={ (date) => this.setState({ date }) }
-               value={ this.state.date }
-            />
-            <View style={ styles.separator } />
+               <TouchableOpacity 
+                  style={{ justifyContent: 'center', alignItems: 'center' }} 
+                  onPress={() => { this.showDatePicker() }}>
+                  
+                  <Text style={ styles.calendarPicker }>
+                     Pick a date
+                  </Text>
+               </TouchableOpacity>
 
-            <TextInput style={ styles.txtTitle }
-               placeholder="Time - eg. 01.00-02.00"
-               keyboardType="decimal-pad"
-               onChangeText={ (time) => this.setState({ time }) }
-               value={ this.state.time }
-            />
-            <View style={ styles.separator } />
+               {this.state.show && <DateTimePicker
+                  mode={ this.state.mode }
+                  value={ new Date(parseInt(y), parseInt(m) - 1, parseInt(d)) }
+                  display='spinner'
+                  is24Hour={true}
+                  onChange={(event, date) => { this.state.mode === 'date' ? this.setDate(event, date) : this.setMinTime(event, date) }}
+               />}
+               <View style={ styles.separator } />
 
-            <TextInput style={ styles.txtTitle }
-               placeholder="Location"
-               onChangeText={ (location) => this.setState({ location }) }
-               value={ this.state.location }
-            />
+               <Text style={ styles.formTitle }>Time</Text>
 
-            <View style={ styles.separator } />
+               <View style={ styles.timePicker }>
+                  <TouchableOpacity 
+                     style={{ justifyContent: 'center', alignItems: 'center' }} 
+                     onPress={() => { this.showTimePicker() }}>
+                     
+                     <Text 
+                     style={ styles.calendarPicker }>
+                        From
+                     </Text>
+                  </TouchableOpacity>
 
-            <TextInput style={ styles.txtTitle }
-               placeholder="Description (optional)"
-               onChangeText={ (title) => this.setState({ description } ? { description } : '') }
-               value={ this.state.description }
-            />
+                  <TouchableOpacity 
+                     style={{ justifyContent: 'center', alignItems: 'center' }} 
+                     onPress={() => { this.showTimePicker() }}>
+                     
+                     <Text 
+                     style={ styles.calendarPicker }>
+                        To
+                     </Text>
+                  </TouchableOpacity>
+               </View>
 
-            <View style={ styles.buttonContainer }>
-               <View style={ styles.buttonStyle }><Button title="Done" onPress={ () => this.saveEvent() } /></View>
-               <View style={ styles.buttonStyle }><Button title="Discard" onPress={ () => this.props.navigation.goBack(null) } /></View>
+               <View style={ styles.separator } />
+
+               <TextInput style={ styles.txtTitle }
+                  placeholder="Location"
+                  onChangeText={ (location) => this.setState({ location }) }
+                  value={ this.state.location }
+               />
+
+               <View style={ styles.separator } />
+
+               <TextInput style={ styles.txtTitle }
+                  placeholder="Description (optional)"
+                  onChangeText={ (title) => this.setState({ description } ? { description } : '') }
+                  value={ this.state.description }
+               />
+
+               <View style={ styles.buttonContainer }>
+                  <View style={ styles.buttonStyle }><Button title="Done" onPress={ () => this.saveEvent() } /></View>
+                  <View style={ styles.buttonStyle }><Button title="Discard" onPress={ () => this.props.navigation.goBack(null) } /></View>
+               </View>
             </View>
-         </View>
-      </KeyboardAvoidingView>
-   )};
+         </KeyboardAvoidingView>
+      )
+   };
 }
 
 const styles = StyleSheet.create({
@@ -194,7 +269,7 @@ const styles = StyleSheet.create({
       backgroundColor: "#CED0CE"
    },
    buttonContainer: {
-      marginTop: 50,
+      marginTop: 20,
       flexDirection: "row",
       width: Dimensions.get("window").width,
       alignItems: "center",
@@ -204,5 +279,17 @@ const styles = StyleSheet.create({
       marginHorizontal: 10,
       width: Dimensions.get("window").width * 0.3,
    },
-
+   calendarPicker: {
+      marginTop: 2,
+      marginBottom: 10,
+      fontSize: 20,
+      marginVertical: 10,
+      opacity: 0.3,
+      marginHorizontal: 80,
+   },
+   timePicker: {
+      flexDirection: "row",
+      width: Dimensions.get("window").width,
+      justifyContent: 'center'
+   },
 });

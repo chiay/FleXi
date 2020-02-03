@@ -32,7 +32,7 @@ export default class SettingScreen extends React.Component {
             renderItem={ ({ item }) => <TouchableOpacity onPress={ () => this.props.navigation.navigate( item.key ) }><Text style={ styles.item }>{ item.key }</Text></TouchableOpacity> }
             ItemSeparatorComponent={ this.renderSeparator }
             keyExtractor={ item => item.key }
-            />
+         />
       </View>
    )};
 }

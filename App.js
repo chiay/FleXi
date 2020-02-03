@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dimensions, View, ScrollView, Text, StyleSheet } from 'react-native';
+import { Dimensions, View, ScrollView, Text, StyleSheet, Image } from 'react-native';
 import { createAppContainer } from 'react-navigation';
 import { createStackNavigator } from 'react-navigation-stack';
 import { createDrawerNavigator, DrawerNavigatorItems } from 'react-navigation-drawer';
@@ -7,6 +7,8 @@ import 'react-native-gesture-handler';
 
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faHome, faCogs } from '@fortawesome/free-solid-svg-icons';
+
+import { logo } from './assets/index';
 
 import LinearGradient from 'react-native-linear-gradient'
 
@@ -38,11 +40,16 @@ const DrawerNavigator = createDrawerNavigator({
    // <LinearGradient start={{x: 0, y: 0}} end={{x: 1, y: 0}} colors={['#4c669f', '#3b5998', '#192f6a']} style={styles.linearGradient}>
    contentComponent: props => 
       <ScrollView>
-         <LinearGradient colors={[ '#43dde6', '#364f6b' ]} style={ styles.topbar } start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+         <LinearGradient colors={[ '#43dde6', '#364f6b' ]} style={ styles.topBar } start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+            <Image 
+               style={ styles.img }
+               source={logo}
+            />
             <Text style={ styles.text }>
-               FleXi
+               Welcome to FleXi
             </Text>
          </LinearGradient>
+         
          <DrawerNavigatorItems {...props} />
       </ScrollView>
    ,
@@ -53,7 +60,7 @@ const DrawerNavigator = createDrawerNavigator({
       activeTintColor: "rgb(54,79,107)",
       itemsContainerStyle: {
          marginTop: 16,
-         marginHorzontal: 8
+         marginHorizontal: 8
       },
       itemStyle: {
          borderRadius: 4
@@ -111,17 +118,23 @@ const styles = StyleSheet.create({
    container:{
       flex: 1
    },
-   topbar: {
+   topBar: {
       width: "100%",
       height: Dimensions.get("window").height * 0.2,
-      backgroundColor: "#43dde6",
+      justifyContent: 'center',
+      alignItems: 'center',
+      opacity: 0.9,
    },
    text: {
-      fontSize: 30,
-      marginHorizontal: 25,
-      marginVertical: 15,
-      color: "#364f6b"
+      fontSize: 18,
+      marginTop: 2,
+      color: "#F0F0F0",
+      opacity: 0.7,
    },
+   img: {
+      width: 80, 
+      height: 80,
+   }
 });
 
 

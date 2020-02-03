@@ -80,6 +80,10 @@ export default class HomeScreen extends React.Component {
                </Text>
             </View> 
          </View>
+         <View>
+
+         </View>
+         
          <TouchableOpacity style={ styles.buttonTouch } onPress= { () => this.props.navigation.navigate('AddEvent') }>
             <View>
                <FontAwesomeIcon icon={ faPlus } size={ 35 } color="#364f6b" />
@@ -192,5 +196,8 @@ const styles = StyleSheet.create({
    },
    taskRemove: {
 
+   },
+   calender: {
+      display: "none"
    },
 })
