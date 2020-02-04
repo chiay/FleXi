@@ -35,8 +35,14 @@ export default class AddEventScreen extends React.Component {
          maxTime: new Date(),
          location: '',
          description: '',
+         done: false,
+
          show: false,
          mode: 'date',
+         timeOption: '',
+         from: 'From',
+         to: 'To  ',
+         dateTitle: 'Pick a date',
       };
 
    }
@@ -45,31 +51,61 @@ export default class AddEventScreen extends React.Component {
       this.setState({
          show: false,
          date: moment(date).format("YYYY-MM-DD"),
+         dateTitle: moment(date).format("YYYY-MM-DD"),
       });
       
       console.log(this.state.date);
+   }
+
+   setTime = (event, date) => {
+      if (this.state.timeOption === 't1') {
+         this.setState({
+            show: false,
+            minTime: moment(date).format("h.mm a"),
+            from: moment(date).format("h:mm a"),
+         });
+         console.log(this.state.minTime);
+      } else {
+         this.setState({
+            show: false,
+            maxTime: moment(date).format("h.mm a"),
+            to: moment(date).format("h:mm a"),
+         });
+         console.log(this.state.maxTime);
+      }
    }
 
    setMinTime = (event, date) => {
       this.setState({
          show: false,
          minTime: moment(date).format("h.mm a"),
+         from: moment(date).format("h:mm a"),
       });
       console.log(this.state.minTime);
    }
+
+   setMaxTime = (event, date) => {
+      this.setState({
+         show: false,
+         maxTime: moment(date).format("h.mm a"),
+         to: moment(date).format("h:mm a"),
+      });
+      console.log(this.state.maxTime);
+   }
    
    showDatePicker = () => {
-      this.show('date');
+      this.show('date', '');
    }
 
-   showTimePicker = () => {
-      this.show('time');
+   showTimePicker = (opt) => {
+      this.show('time', opt);
    }
 
-   show = (mode) => {
+   show = (mode, opt) => {
       this.setState({
          show: true,
          mode,
+         timeOption: opt,
       });
    }
 
@@ -84,6 +120,7 @@ export default class AddEventScreen extends React.Component {
          eventMaxTime: this.state.maxTime,
          eventLocation: this.state.location,
          eventDescription: this.state.description,
+         eventDone: this.state.done,
       }
 
       /* Check if rules object exists */
@@ -116,6 +153,8 @@ export default class AddEventScreen extends React.Component {
       const y = moment(this.state.date).format("YYYY");
       const m = moment(this.state.date).format("MM");
       const d = moment(this.state.date).format("DD");
+      const h = moment(this.state.date).format("h");
+      const min = moment(this.state.date).format("mm");
 
       return (
          <KeyboardAvoidingView style={ styles.container } behavior="height" enabled>
@@ -171,10 +210,10 @@ export default class AddEventScreen extends React.Component {
 
                {this.state.show && <DateTimePicker
                   mode={ this.state.mode }
-                  value={ new Date(parseInt(y), parseInt(m) - 1, parseInt(d)) }
+                  value={ new Date(parseInt(y), parseInt(m) - 1, parseInt(d), parseInt(h), parseInt(min)) }
                   display='spinner'
                   is24Hour={true}
-                  onChange={(event, date) => { this.state.mode === 'date' ? this.setDate(event, date) : this.setMinTime(event, date) }}
+                  onChange={(event, date) => { this.state.mode === 'date' ? this.setDate(event, date) : this.setTime(event, date) }}
                />}
                <View style={ styles.separator } />
 
@@ -183,21 +222,21 @@ export default class AddEventScreen extends React.Component {
                <View style={ styles.timePicker }>
                   <TouchableOpacity 
                      style={{ justifyContent: 'center', alignItems: 'center' }} 
-                     onPress={() => { this.showTimePicker() }}>
+                     onPress={() => { this.showTimePicker('t1') }}>
                      
                      <Text 
                      style={ styles.calendarPicker }>
-                        From
+                        { this.state.from }
                      </Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity 
                      style={{ justifyContent: 'center', alignItems: 'center' }} 
-                     onPress={() => { this.showTimePicker() }}>
+                     onPress={() => { this.showTimePicker('t2') }}>
                      
                      <Text 
                      style={ styles.calendarPicker }>
-                        To
+                        { this.state.to }
                      </Text>
                   </TouchableOpacity>
                </View>
@@ -283,9 +322,8 @@ const styles = StyleSheet.create({
       marginTop: 2,
       marginBottom: 10,
       fontSize: 20,
-      marginVertical: 10,
       opacity: 0.3,
-      marginHorizontal: 80,
+      marginHorizontal: 70,
    },
    timePicker: {
       flexDirection: "row",

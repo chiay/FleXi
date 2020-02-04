@@ -8,12 +8,13 @@ import { faTrashAlt } from '@fortawesome/free-regular-svg-icons';
 
 import LinearGradient from 'react-native-linear-gradient';
 import AsyncStorage from '@react-native-community/async-storage';
+import { withNavigationFocus } from 'react-navigation';
 
-export default class RulesListScreen extends React.Component {
+class RulesListScreen extends React.Component {
    constructor(props) {
       super(props);
       this.state = {
-         rules: null,
+         rules: [],
       };
    }
 
@@ -37,14 +38,20 @@ export default class RulesListScreen extends React.Component {
    deleteRule = async (id) => {
       try {
          const buffer = await AsyncStorage.getItem('rules');
-         const existRules = JSON.parse(buffer);
+         let existRules = JSON.parse(buffer);
          const index = existRules.map((e) => {return e.ruleID;}).indexOf(id);
          console.log(index);
-         const newRules = existRules.splice(index+1, 1);
-         console.log(newRules);
-         await AsyncStorage.setItem('rules', JSON.stringify(newRules))
+         existRules.splice(index, 1);
+         console.log(existRules);
+         await AsyncStorage.setItem('rules', JSON.stringify(existRules))
          .then( () => {
-            Alert.alert('Your rule is deleted successfully.');
+            Alert.alert(
+               'Delete Rule', 
+               'Your rule is deleted successfully.',
+               [
+                  { text: 'OK', onPress: () => this.retrieveRule() },
+               ],
+            );
             //console.log(JSON.stringify(newRule));
          } );
          
@@ -54,7 +61,14 @@ export default class RulesListScreen extends React.Component {
    }
 
    componentDidMount() {
-      this.retrieveRule();
+      const { navigation } = this.props;
+      this.focusListener = navigation.addListener('didFocus', () => {
+         this.retrieveRule();
+      });
+   }
+
+   componentWillUnmount() {
+      this.focusListener.remove();
    }
 
    isEmptyList = () => {
@@ -95,7 +109,7 @@ export default class RulesListScreen extends React.Component {
                      <Text style={ styles.listTitle }>{ item.ruleTitle }</Text>
                   </View>
                   <View style={ styles.perRuleTimeView }>
-                     <Text style={ styles.listTitle }>{ item.ruleTime }</Text>
+                     <Text style={ styles.listTitle }>{ item.ruleMinTime } - { item.ruleMaxTime }</Text>
                   </View>
                </TouchableOpacity>
                <TouchableOpacity 
@@ -142,18 +156,6 @@ const styles = StyleSheet.create({
       fontSize: 18,
       opacity: 0.5,
    },
-   topbar: {
-      backgroundColor: "#fc5185", 
-      borderBottomStartRadius: 50, 
-      borderBottomEndRadius: 50, 
-      height: 200,
-      marginBottom: 5,
-   },
-   bars: {
-      alignItems: "flex-start",
-      margin: 16,
-      width: 24,
-   },
    buttonTouch: {
       backgroundColor: "rgba(54, 79, 107, 0.1)",
       width: 60,
@@ -172,10 +174,9 @@ const styles = StyleSheet.create({
       marginLeft: 20,
       marginVertical: 10,
    },
-   perRule: {
-      width: Dimensions.get("window").width * 0.85,
-   },
    perRuleTitleView: {
-      width: 150
+      width: 120
    },
 })
+
+export default withNavigationFocus(RulesListScreen);

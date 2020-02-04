@@ -2,20 +2,22 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Alert, FlatList } from 'react-native';
 
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faBars, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faBars, faPlus, faCalendarDay } from '@fortawesome/free-solid-svg-icons';
 import { faCalendarAlt } from '@fortawesome/free-regular-svg-icons';
+import { faTrashAlt } from '@fortawesome/free-regular-svg-icons';
 
 import LinearGradient from 'react-native-linear-gradient';
 
 import AsyncStorage from '@react-native-community/async-storage';
+import { withNavigationFocus } from 'react-navigation';
 
-export default class HomeScreen extends React.Component {
+class HomeScreen extends React.Component {
    constructor(props) {
       super(props);
       this.state = {
          date: '',
          taskRemain: 0,
-         events: null,
+         events: [],
       };
    }
 
@@ -46,6 +48,31 @@ export default class HomeScreen extends React.Component {
       }
    }
 
+   deleteEvent = async (id) => {
+      try {
+         const buffer = await AsyncStorage.getItem('events');
+         let existEvents = JSON.parse(buffer);
+         const index = existEvents.map((e) => {return e.eventID;}).indexOf(id);
+         console.log(index);
+         existEvents.splice(index, 1);
+         console.log(existEvents);
+         await AsyncStorage.setItem('events', JSON.stringify(existEvents))
+         .then( () => {
+            Alert.alert(
+               'Delete Event', 
+               'Your event is deleted successfully.',
+               [
+                  { text: 'OK', onPress: () => this.retrieveEvent() },
+               ],
+            );
+            //console.log(JSON.stringify(newRule));
+         } );
+         
+      } catch (error) {
+         console.log(error.message);
+      }
+   }
+
    componentDidMount() {
       const date = new Date().getDate();
       const month = new Date().getMonth();
@@ -56,7 +83,18 @@ export default class HomeScreen extends React.Component {
          date: date + ' ' + month_str[month] + '. ' + year,
       });
 
-      this.retrieveEvent();
+      const dataStorageDir = 'T' + year.toString() + month_str[month] + date.toString();
+      console.log(dataStorageDir);
+
+      const { navigation } = this.props;
+      this.focusListener = navigation.addListener('didFocus', () => {
+         this.retrieveEvent();
+      });
+
+   }
+
+   componentWillUnmount() {
+      this.focusListener.remove();
    }
 
    key = (item) => item.eventID.toString();
@@ -76,7 +114,7 @@ export default class HomeScreen extends React.Component {
             </View>
             <View>
                <Text style={ styles.remain }>
-                  Task(s) remaining for today: { this.state.taskRemain }
+                  Total task(s) for today: { this.state.taskRemain }
                </Text>
             </View> 
          </View>
@@ -99,11 +137,18 @@ export default class HomeScreen extends React.Component {
                      { item.eventTitle }
                   </Text>
                   <Text style={ styles.perEventDateTime }> 
-                     { item.eventDate } , { item.eventTime }
+                     { item.eventDate } , { item.eventMinTime } - { item.eventMaxTime }
                   </Text>
                </TouchableOpacity>
-               <TouchableOpacity style={ styles.taskRemove }>
-
+               <TouchableOpacity 
+                  style={ styles.taskRemove }
+                  onPress={ () => this.deleteEvent(item.eventID) }>
+               <FontAwesomeIcon 
+                     style={{  }} 
+                     icon={ faTrashAlt } 
+                     size={30} 
+                     color="#000"
+               />
                </TouchableOpacity>
             </View>
             }
@@ -169,7 +214,7 @@ const styles = StyleSheet.create({
       height: 80,
       marginVertical: 5,
       marginHorizontal: 4,
-      opacity: 0.8,
+      opacity: 0.7,
    },
    emptyMsgSection: {
       alignItems: "center",
@@ -187,17 +232,20 @@ const styles = StyleSheet.create({
    },
    perEventDateTime: {
       marginTop: 3,
-      marginHorizontal: 30,
+      marginHorizontal: 20,
       fontSize: 20,
       opacity: 0.5,
    },
    taskTouch: {
-
+      width: Dimensions.get('window').width * 0.87,
    },
    taskRemove: {
-
-   },
-   calender: {
-      display: "none"
+      top: -50,
+      left: Dimensions.get('window').width * 0.87,
+      zIndex: 1,
+      position: 'relative',
+      opacity: 0.5,
    },
 })
+
+export default withNavigationFocus(HomeScreen);
