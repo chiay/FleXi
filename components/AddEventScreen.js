@@ -43,18 +43,23 @@ export default class AddEventScreen extends React.Component {
          from: 'From',
          to: 'To  ',
          dateTitle: 'Pick a date',
+         path: '',
       };
 
    }
 
    setDate = (event, date) => {
+      const month_str = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
       this.setState({
          show: false,
          date: moment(date).format("YYYY-MM-DD"),
          dateTitle: moment(date).format("YYYY-MM-DD"),
+         path: 'T' + moment(date).format('YYYY').toString() + month_str[parseInt(moment(date).format('MM')) - 1] + parseInt(moment(date).format('DD')).toString(),
       });
       
-      console.log(this.state.date);
+      //console.log(this.state.date);
+      //console.log(this.state.path);
    }
 
    setTime = (event, date) => {
@@ -64,14 +69,14 @@ export default class AddEventScreen extends React.Component {
             minTime: moment(date).format("h.mm a"),
             from: moment(date).format("h:mm a"),
          });
-         console.log(this.state.minTime);
+         //console.log(this.state.minTime);
       } else {
          this.setState({
             show: false,
             maxTime: moment(date).format("h.mm a"),
             to: moment(date).format("h:mm a"),
          });
-         console.log(this.state.maxTime);
+         //console.log(this.state.maxTime);
       }
    }
 
@@ -81,7 +86,7 @@ export default class AddEventScreen extends React.Component {
          minTime: moment(date).format("h.mm a"),
          from: moment(date).format("h:mm a"),
       });
-      console.log(this.state.minTime);
+      //console.log(this.state.minTime);
    }
 
    setMaxTime = (event, date) => {
@@ -90,7 +95,7 @@ export default class AddEventScreen extends React.Component {
          maxTime: moment(date).format("h.mm a"),
          to: moment(date).format("h:mm a"),
       });
-      console.log(this.state.maxTime);
+      //console.log(this.state.maxTime);
    }
    
    showDatePicker = () => {
@@ -110,7 +115,7 @@ export default class AddEventScreen extends React.Component {
    }
 
    saveEvent = async () => {
-      const eventSetup = {
+      let eventSetup = {
          eventID: this.state.id,
          eventTitle: this.state.title,
          eventType: this.state.type,
@@ -124,7 +129,8 @@ export default class AddEventScreen extends React.Component {
       }
 
       /* Check if rules object exists */
-      const existEvents = await AsyncStorage.getItem('events');
+      //const existEvents = await AsyncStorage.getItem('events');
+      const existEvents = await AsyncStorage.getItem(this.state.path);
       //const len = Object.keys(existRules).length;
 
       eventSetup.eventID = Math.random();
@@ -138,11 +144,11 @@ export default class AddEventScreen extends React.Component {
       newEvent.push(eventSetup);
 
       try {
-         await AsyncStorage.setItem('events', JSON.stringify(newEvent))
+         await AsyncStorage.setItem(this.state.path, JSON.stringify(newEvent))
          .then( () => {
             Alert.alert('Your event is saved successfully.');
             this.props.navigation.goBack(null);
-            console.log(JSON.stringify(newEvent));
+            //console.log(JSON.stringify(newEvent));
          } );
       } catch (error) {
          Alert.alert('Your event failed to save. Please try again.');
@@ -215,6 +221,7 @@ export default class AddEventScreen extends React.Component {
                   is24Hour={true}
                   onChange={(event, date) => { this.state.mode === 'date' ? this.setDate(event, date) : this.setTime(event, date) }}
                />}
+
                <View style={ styles.separator } />
 
                <Text style={ styles.formTitle }>Time</Text>

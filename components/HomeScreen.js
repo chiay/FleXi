@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Alert, FlatList } from 'react-native';
 
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faBars, faPlus, faCalendarDay } from '@fortawesome/free-solid-svg-icons';
+import { faBars, faPlus, faRedoAlt } from '@fortawesome/free-solid-svg-icons';
 import { faCalendarAlt } from '@fortawesome/free-regular-svg-icons';
 import { faTrashAlt } from '@fortawesome/free-regular-svg-icons';
 
@@ -10,6 +10,8 @@ import LinearGradient from 'react-native-linear-gradient';
 
 import AsyncStorage from '@react-native-community/async-storage';
 import { withNavigationFocus } from 'react-navigation';
+import moment from 'moment';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 class HomeScreen extends React.Component {
    constructor(props) {
@@ -18,6 +20,10 @@ class HomeScreen extends React.Component {
          date: '',
          taskRemain: 0,
          events: [],
+
+         show: false,
+         path: '',
+         isLoading: true,
       };
    }
 
@@ -31,32 +37,78 @@ class HomeScreen extends React.Component {
       );
    };
 
+   setToday = () => {
+      this.setState({ isLoading: true, });
+
+      const date = new Date().getDate();
+      const month = new Date().getMonth();
+      const year = new Date().getFullYear();
+      const month_str = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+      const path = 'T' + year.toString() + month_str[month] + date.toString();
+      console.log(path);
+
+      this.setState({  
+         date: date + ' ' + month_str[month] + '. ' + year,
+         path: path,
+      });
+
+      if(this.state.isLoading) {
+         this.retrieveEvent();
+      }
+      
+   }
+
+   showDatePicker = () => {
+      this.setState({
+         show: true,
+      })
+   }
+
+   setDate = (event, date) => {
+      const month_str = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+      this.setState({
+         show: false,
+
+         date: parseInt(moment(date).format("DD")).toString() + ' ' + month_str[parseInt(moment(date).format('MM')) - 1] + '. ' + moment(date).format('YYYY').toString(),
+         path: 'T' + moment(date).format('YYYY').toString() + month_str[parseInt(moment(date).format('MM')) - 1] + parseInt(moment(date).format('DD')).toString(),
+      });
+      
+      //console.log(this.state.date);
+      //console.log(this.state.path);
+
+      this.retrieveEvent();
+   }
+
    retrieveEvent = async () => {
 
       try {
-         const buffer = await AsyncStorage.getItem('events');
-         const myEvents = JSON.parse(buffer);
-         const len = Object.keys(myEvents).length;
-         //console.log(length);
-
-         this.setState({ taskRemain: len, events: myEvents });
+         const buffer = await AsyncStorage.getItem(this.state.path);
+         if (buffer) {
+            const myEvents = JSON.parse(buffer);
+            const len = Object.keys(myEvents).length;
+            //console.log(length);
+            this.setState({ taskRemain: len, events: myEvents, isLoading: false, });
+         }
+         
          //console.log(this.state.rules);
 
       } catch (error) {
-         Alert.alert('Fail to retrieve data.');
-         //console.log(error.message);
+         //Alert.alert('Fail to retrieve data.');
+         console.log(error.message);
       }
    }
 
    deleteEvent = async (id) => {
       try {
-         const buffer = await AsyncStorage.getItem('events');
+         const buffer = await AsyncStorage.getItem(this.state.path);
          let existEvents = JSON.parse(buffer);
          const index = existEvents.map((e) => {return e.eventID;}).indexOf(id);
          console.log(index);
          existEvents.splice(index, 1);
          console.log(existEvents);
-         await AsyncStorage.setItem('events', JSON.stringify(existEvents))
+         await AsyncStorage.setItem(this.state.path, JSON.stringify(existEvents))
          .then( () => {
             Alert.alert(
                'Delete Event', 
@@ -74,23 +126,12 @@ class HomeScreen extends React.Component {
    }
 
    componentDidMount() {
-      const date = new Date().getDate();
-      const month = new Date().getMonth();
-      const year = new Date().getFullYear();
-      const month_str = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-      this.setState({  
-         date: date + ' ' + month_str[month] + '. ' + year,
-      });
-
-      const dataStorageDir = 'T' + year.toString() + month_str[month] + date.toString();
-      console.log(dataStorageDir);
+      this.setToday();
 
       const { navigation } = this.props;
       this.focusListener = navigation.addListener('didFocus', () => {
          this.retrieveEvent();
       });
-
    }
 
    componentWillUnmount() {
@@ -100,62 +141,83 @@ class HomeScreen extends React.Component {
    key = (item) => item.eventID.toString();
 
    render() {
-   return (
-      <View style={ styles.container }>
-         <View style={ styles.topbar }>
-            <TouchableOpacity style={ styles.bars } onPress={ this.props.navigation.openDrawer }>
-               <FontAwesomeIcon icon={ faBars } size={ 24 } color="#364f6b" />
+      const y = moment(this.state.date).format("YYYY");
+      const m = moment(this.state.date).format("MM");
+      const d = moment(this.state.date).format("DD");
+
+      return (
+         <View style={ styles.container }>
+            <View style={ styles.topBar }>
+               <TouchableOpacity style={ styles.bars } onPress={ this.props.navigation.openDrawer }>
+                  <FontAwesomeIcon icon={ faBars } size={ 24 } color="#364f6b" />
+               </TouchableOpacity>
+               <View style={{ flexDirection:"row" }}>
+                  <FontAwesomeIcon style={ styles.dateIcon } icon={ faCalendarAlt } size={ 28 } />
+                  
+                  <TouchableOpacity onPress={ () => this.showDatePicker() }>
+                     <Text style={ styles.date }>
+                        { this.state.date }
+                     </Text>
+                  </TouchableOpacity>
+
+                  {this.state.show && <DateTimePicker
+                  mode={ 'date' }
+                  value={ new Date(parseInt(y), parseInt(m) - 1, parseInt(d)) }
+                  display='default'
+                  is24Hour={true}
+                  onChange={(event, date) => { this.setDate(event, date) }}
+                  />}
+                  
+                  <TouchableOpacity 
+                     style={{ width: 20, marginLeft: 110, }}
+                     onPress={ () => this.setToday() }>
+                     <FontAwesomeIcon style={ styles.reloadIcon } icon={ faRedoAlt } size={ 20 } />
+                  </TouchableOpacity>
+               </View>
+               <View>
+                  <Text style={ styles.remain }>
+                     Total task(s) for today: { this.state.taskRemain }
+                  </Text>
+               </View> 
+            </View>
+            <View>
+
+            </View>
+            
+            <TouchableOpacity style={ styles.buttonTouch } onPress= { () => this.props.navigation.navigate('AddEvent') }>
+               <View>
+                  <FontAwesomeIcon icon={ faPlus } size={ 35 } color="#364f6b" />
+               </View>
             </TouchableOpacity>
-            <View style={{ flexDirection:"row" }}>
-               <FontAwesomeIcon style={ styles.dateIcon } icon={ faCalendarAlt } size={ 28 } />
-               <Text style={ styles.date }>
-                  { this.state.date }
-               </Text>
-            </View>
-            <View>
-               <Text style={ styles.remain }>
-                  Total task(s) for today: { this.state.taskRemain }
-               </Text>
-            </View> 
-         </View>
-         <View>
 
+            <FlatList
+               data={ this.state.events }
+               renderItem={ ({ item }) =>
+               <View style={ styles.taskContainer }>
+                  <TouchableOpacity style={ styles.taskTouch }>
+                     <Text style={ styles.perEventTitleFont}>
+                        { item.eventTitle }
+                     </Text>
+                     <Text style={ styles.perEventDateTime }> 
+                        { item.eventDate } , { item.eventMinTime } - { item.eventMaxTime }
+                     </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                     style={ styles.taskRemove }
+                     onPress={ () => this.deleteEvent(item.eventID) }>
+                  <FontAwesomeIcon 
+                        style={{  }} 
+                        icon={ faTrashAlt } 
+                        size={30} 
+                        color="#000"
+                  />
+                  </TouchableOpacity>
+               </View>
+               }
+               keyExtractor={ this.key }
+               ListEmptyComponent={ this.isEmptyList }
+            />
          </View>
-         
-         <TouchableOpacity style={ styles.buttonTouch } onPress= { () => this.props.navigation.navigate('AddEvent') }>
-            <View>
-               <FontAwesomeIcon icon={ faPlus } size={ 35 } color="#364f6b" />
-            </View>
-         </TouchableOpacity>
-
-         <FlatList
-            data={ this.state.events }
-            renderItem={ ({ item }) =>
-            <View style={ styles.taskContainer }>
-               <TouchableOpacity style={ styles.taskTouch }>
-                  <Text style={ styles.perEventTitleFont}>
-                     { item.eventTitle }
-                  </Text>
-                  <Text style={ styles.perEventDateTime }> 
-                     { item.eventDate } , { item.eventMinTime } - { item.eventMaxTime }
-                  </Text>
-               </TouchableOpacity>
-               <TouchableOpacity 
-                  style={ styles.taskRemove }
-                  onPress={ () => this.deleteEvent(item.eventID) }>
-               <FontAwesomeIcon 
-                     style={{  }} 
-                     icon={ faTrashAlt } 
-                     size={30} 
-                     color="#000"
-               />
-               </TouchableOpacity>
-            </View>
-            }
-            keyExtractor={ this.key }
-            ListEmptyComponent={ this.isEmptyList }
-         />
-      </View>
       );
    }
 }
@@ -165,7 +227,7 @@ const styles = StyleSheet.create({
       flex: 1,
       backgroundColor: "#f0f0f0"
    },
-   topbar: {
+   topBar: {
       backgroundColor: "#fc5185", 
       borderBottomStartRadius: 50, 
       borderBottomEndRadius: 50, 
@@ -187,6 +249,12 @@ const styles = StyleSheet.create({
       color: "#364f6b",
       marginLeft: 40,
       marginTop: 66,
+   },
+   reloadIcon:{
+      color: "#364f6b",
+      //marginLeft: 110,
+      marginTop: 70,
+      opacity: 0.5,
    },
    remain: {
       fontSize: 20,
