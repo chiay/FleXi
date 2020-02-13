@@ -9,8 +9,9 @@ TextInput,
 Picker,
 Button,
 Alert,
-KeyboardAvoidingView,
-TouchableOpacity
+Switch,
+TouchableOpacity,
+ScrollView,
 } from 'react-native';
 
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -44,6 +45,11 @@ export default class AddEventScreen extends React.Component {
          to: 'To  ',
          dateTitle: 'Pick a date',
          path: '',
+         autoAssign: false,
+         toggleSwitch: false,
+         showDateTime: true,
+         requiredTime: 0,
+         split: false,
       };
 
    }
@@ -114,6 +120,34 @@ export default class AddEventScreen extends React.Component {
       });
    }
 
+   switchToggled = (toggled, opt) => {
+      if (opt === 'dt') {
+         this.setState({
+            toggleSwitch: !toggled,
+            showDateTime: !this.state.showDateTime,
+         });
+      } else if(opt === 'sp') {
+         this.setState({
+            split: !toggled,
+         });
+      }
+      
+
+      /* TODO: Call function to auto-assign date and time*/
+   }
+
+   autoAssignment = () => {
+      const priority = this.state.priority;
+      const dueDate = this.state.date;
+      const requiredTime= this.state.requiredTime;
+      const allowSplit = this.state.split;
+      /* Check rules and all dates starting from today till due dates */
+   }
+
+   retrieveFullEvent = async () => {
+
+   }
+
    saveEvent = async () => {
       let eventSetup = {
          eventID: this.state.id,
@@ -163,14 +197,14 @@ export default class AddEventScreen extends React.Component {
       const min = moment(this.state.date).format("mm");
 
       return (
-         <KeyboardAvoidingView style={ styles.container } behavior="height" enabled>
+         <View style={ styles.container }>
             <View style={ styles.header }>
                <View style={{ flexDirection:"row" }}>
                   <FontAwesomeIcon style={{ marginHorizontal: 10, marginTop: 2 }} icon={faCalendarPlus} size={25} color="#364f6b"/>
                   <Text style={ styles.headerText }>Add to Calendar</Text>
                </View>
             </View>
-            <View style={ styles.formContainer }>
+            <ScrollView style={ styles.formContainer }>
                <TextInput style={ styles.txtTitle }
                   placeholder="Give me a title..."
                   onChangeText={ (title) => this.setState({ title }) }
@@ -203,52 +237,110 @@ export default class AddEventScreen extends React.Component {
                </Picker>
                
                <View style={ styles.separator } />
-               <Text style={ styles.formTitle }>Date</Text>
 
-               <TouchableOpacity 
-                  style={{ justifyContent: 'center', alignItems: 'center' }} 
-                  onPress={() => { this.showDatePicker() }}>
-                  
-                  <Text style={ styles.calendarPicker }>
-                     Pick a date
-                  </Text>
-               </TouchableOpacity>
-
-               {this.state.show && <DateTimePicker
-                  mode={ this.state.mode }
-                  value={ new Date(parseInt(y), parseInt(m) - 1, parseInt(d), parseInt(h), parseInt(min)) }
-                  display='spinner'
-                  is24Hour={true}
-                  onChange={(event, date) => { this.state.mode === 'date' ? this.setDate(event, date) : this.setTime(event, date) }}
-               />}
-
-               <View style={ styles.separator } />
-
-               <Text style={ styles.formTitle }>Time</Text>
-
-               <View style={ styles.timePicker }>
-                  <TouchableOpacity 
-                     style={{ justifyContent: 'center', alignItems: 'center' }} 
-                     onPress={() => { this.showTimePicker('t1') }}>
-                     
-                     <Text 
-                     style={ styles.calendarPicker }>
-                        { this.state.from }
-                     </Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity 
-                     style={{ justifyContent: 'center', alignItems: 'center' }} 
-                     onPress={() => { this.showTimePicker('t2') }}>
-                     
-                     <Text 
-                     style={ styles.calendarPicker }>
-                        { this.state.to }
-                     </Text>
-                  </TouchableOpacity>
+               <View style={{ flexDirection: 'row', marginVertical: 10, }}>
+                  <Text style={ styles.formTitle }>Auto-assign Date & Time</Text>
+                  <Switch style={ styles.autoAssignSwitch } onValueChange= { () => this.switchToggled(this.state.toggleSwitch, 'dt') } value={ this.state.toggleSwitch }/>
                </View>
 
                <View style={ styles.separator } />
+
+               {this.state.show && <DateTimePicker
+                     mode={ this.state.mode }
+                     value={ new Date(parseInt(y), parseInt(m) - 1, parseInt(d), parseInt(h), parseInt(min)) }
+                     display='spinner'
+                     is24Hour={true}
+                     onChange={(event, date) => { this.state.mode === 'date' ? this.setDate(event, date) : this.setTime(event, date) }}
+               />}
+
+               {/* Optional barrier */}
+
+               {this.state.showDateTime && <View>
+
+                  <Text style={ styles.formTitle }>Date</Text>
+
+                  <TouchableOpacity 
+                     style={{ justifyContent: 'center', alignItems: 'center' }} 
+                     onPress={() => { this.showDatePicker() }}>
+                     
+                     <Text style={ styles.calendarPicker }>
+                        { this.state.dateTitle }
+                     </Text>
+                  </TouchableOpacity>
+
+                  <View style={ styles.separator } />
+
+                  <Text style={ styles.formTitle }>Time</Text>
+
+                  <View style={ styles.timePicker }>
+                     <TouchableOpacity 
+                        style={{ justifyContent: 'center', alignItems: 'center' }} 
+                        onPress={() => { this.showTimePicker('t1') }}>
+                        
+                        <Text 
+                        style={ styles.calendarPicker }>
+                           { this.state.from }
+                        </Text>
+                     </TouchableOpacity>
+
+                     <TouchableOpacity 
+                        style={{ justifyContent: 'center', alignItems: 'center' }} 
+                        onPress={() => { this.showTimePicker('t2') }}>
+                        
+                        <Text 
+                        style={ styles.calendarPicker }>
+                           { this.state.to }
+                        </Text>
+                     </TouchableOpacity>
+                  </View>
+
+                  <View style={ styles.separator } />
+
+               </View>}
+               
+               {!this.state.showDateTime && <View>
+                  <Text style={ styles.formTitle }>Due Date</Text>
+
+                  <TouchableOpacity 
+                     style={{ justifyContent: 'center', alignItems: 'center' }} 
+                     onPress={() => { this.showDatePicker() }}>
+                        
+                     <Text style={ styles.calendarPicker }>
+                        { this.state.dateTitle }
+                     </Text>
+                  </TouchableOpacity>
+
+                  <View style={ styles.separator } />
+
+                  <Text style={ styles.formTitle }>Required Time (hr)</Text>
+                  <Picker style={ styles.picker }
+                     selectedValue={ this.state.requiredTime }
+                     onValueChange={ (itemValue) => this.setState({ requiredTime: itemValue }) }
+                  >
+                     <Picker.Item label="1" value={1}/>
+                     <Picker.Item label="2" value={2}/>
+                     <Picker.Item label="3" value={3}/>
+                     <Picker.Item label="4" value={4}/>
+                     <Picker.Item label="5" value={5}/>
+                     <Picker.Item label="6" value={6}/>
+                     <Picker.Item label="7" value={7}/>
+                     <Picker.Item label="8" value={8}/>
+                     <Picker.Item label="9" value={9}/>
+                     <Picker.Item label="10" value={10}/>
+                  </Picker>
+
+                  <View style={ styles.separator } />
+
+                  <View style={{ flexDirection: 'row', marginVertical: 10, }}>
+                     <Text style={ styles.formTitle }>Split Task</Text>
+                     <Switch style={ styles.splitSwitch } onValueChange= { () => this.switchToggled(this.state.split, 'sp') } value={ this.state.split }/>
+                  </View>
+
+                  <View style={ styles.separator } />
+
+               </View>}
+
+               {/* End of optional barrier */}
 
                <TextInput style={ styles.txtTitle }
                   placeholder="Location"
@@ -268,8 +360,8 @@ export default class AddEventScreen extends React.Component {
                   <View style={ styles.buttonStyle }><Button title="Done" onPress={ () => this.saveEvent() } /></View>
                   <View style={ styles.buttonStyle }><Button title="Discard" onPress={ () => this.props.navigation.goBack(null) } /></View>
                </View>
-            </View>
-         </KeyboardAvoidingView>
+            </ScrollView>
+         </View>
       )
    };
 }
@@ -336,5 +428,11 @@ const styles = StyleSheet.create({
       flexDirection: "row",
       width: Dimensions.get("window").width,
       justifyContent: 'center'
+   },
+   autoAssignSwitch: {
+      marginLeft: Dimensions.get('window').width * 0.2,
+   },
+   splitSwitch: {
+      marginLeft: Dimensions.get('window').width * 0.53,
    },
 });

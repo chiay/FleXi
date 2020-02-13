@@ -53,7 +53,7 @@ const DrawerNavigator = createDrawerNavigator({
          <DrawerNavigatorItems {...props} />
       </ScrollView>
    ,
-   drawerWidth: Dimensions.get("window").width * 0.85,
+   drawerWidth: Dimensions.get("window").width * 0.7,
    hideStatusBar: true,
    contentOptions: {
       activeBackgroundColor: "rgba(54, 79, 107, 0.2)",

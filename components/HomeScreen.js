@@ -46,7 +46,7 @@ class HomeScreen extends React.Component {
       const month_str = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
       const path = 'T' + year.toString() + month_str[month] + date.toString();
-      console.log(path);
+      //console.log(path);
 
       this.setState({  
          date: date + ' ' + month_str[month] + '. ' + year,
@@ -105,9 +105,9 @@ class HomeScreen extends React.Component {
          const buffer = await AsyncStorage.getItem(this.state.path);
          let existEvents = JSON.parse(buffer);
          const index = existEvents.map((e) => {return e.eventID;}).indexOf(id);
-         console.log(index);
+         //console.log(index);
          existEvents.splice(index, 1);
-         console.log(existEvents);
+         //console.log(existEvents);
          await AsyncStorage.setItem(this.state.path, JSON.stringify(existEvents))
          .then( () => {
             Alert.alert(
@@ -169,7 +169,7 @@ class HomeScreen extends React.Component {
                   />}
                   
                   <TouchableOpacity 
-                     style={{ width: 20, marginLeft: 110, }}
+                     style={{ width: 20, marginLeft: Dimensions.get('window').width * 0.25, }}
                      onPress={ () => this.setToday() }>
                      <FontAwesomeIcon style={ styles.reloadIcon } icon={ faRedoAlt } size={ 20 } />
                   </TouchableOpacity>

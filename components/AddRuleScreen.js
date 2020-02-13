@@ -28,6 +28,8 @@ export default class AddRuleScreen extends React.Component {
          title: '',
          minTime: new Date(),
          maxTime: new Date(),
+         assignment: true,
+
          show: false,
          mode: 'time',
          timeOption: '',
@@ -72,6 +74,7 @@ export default class AddRuleScreen extends React.Component {
          ruleTitle: this.state.title,
          ruleMinTime: this.state.minTime,
          ruleMaxTime: this.state.maxTime,
+         ruleAssignment: this.state.assignment,
       }
 
       /* Check if rules object exists */
@@ -125,6 +128,18 @@ export default class AddRuleScreen extends React.Component {
                />
                
                <View style={ styles.separator } />
+
+               <Picker style={ styles.assignmentPicker }
+                  selectedValue={ this.state.assignment }
+                  onValueChange={ (itemValue) => this.setState({ assignment: itemValue }) }
+               >
+                  <Picker.Item label="Assign" value={true}/>
+                  <Picker.Item label="Avoid" value={false}/>
+                  
+               </Picker>
+
+               <View style={ styles.separator } />
+
                <Text style={ styles.formTitle }>Time</Text>
 
                <View style={ styles.timePicker }>
@@ -227,5 +242,8 @@ const styles = StyleSheet.create({
       width: Dimensions.get("window").width,
       justifyContent: 'center'
    },
-
+   assignmentPicker: {
+      marginHorizontal: 25,
+      marginVertical: 5,
+   },
 });
