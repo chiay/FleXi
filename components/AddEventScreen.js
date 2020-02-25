@@ -142,10 +142,29 @@ export default class AddEventScreen extends React.Component {
       const requiredTime= this.state.requiredTime;
       const allowSplit = this.state.split;
       /* Check rules and all dates starting from today till due dates */
+
+      this.retrieveRules();
+
+
    }
 
    retrieveFullEvent = async () => {
+      const endDate = this.state.date;
+      const startDate = moment().format();
 
+      console.log("End Date: " + endDate);
+      console.log("Start Date: " + startDate);
+
+   }
+
+   retrieveRules = async () => {
+      const bufferRules = await AsyncStorage.getItem('rules');
+
+      let existRules = JSON.parse(bufferRules);
+      if (existRules) {
+         console.log(existRules);
+         return existRules;
+      }
    }
 
    saveEvent = async () => {
