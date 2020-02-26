@@ -56,7 +56,7 @@ export default class AddEventScreen extends React.Component {
 
    setDate = (event, date) => {
       const month_str = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
+      // Example path: T2020Mar2
       this.setState({
          show: false,
          date: moment(date).format("YYYY-MM-DD"),
@@ -65,7 +65,9 @@ export default class AddEventScreen extends React.Component {
       });
       
       //console.log(this.state.date);
-      //console.log(this.state.path);
+      console.log(this.state.path);
+
+      this.retrieveFullEvent();
    }
 
    setTime = (event, date) => {
@@ -132,37 +134,69 @@ export default class AddEventScreen extends React.Component {
          });
       }
       
-
-      /* TODO: Call function to auto-assign date and time*/
    }
+
+   /* TODO: Call function to auto-assign date and time*/
 
    autoAssignment = () => {
       const priority = this.state.priority;
       const dueDate = this.state.date;
       const requiredTime= this.state.requiredTime;
       const allowSplit = this.state.split;
+
       /* Check rules and all dates starting from today till due dates */
 
-      this.retrieveRules();
-
+      const rules = this.retrieveRules();
+      const events = this.retrieveFullEvent();
 
    }
 
    retrieveFullEvent = async () => {
-      const endDate = this.state.date;
+      const endDate = moment(this.state.date).format();
       const startDate = moment().format();
 
-      console.log("End Date: " + endDate);
-      console.log("Start Date: " + startDate);
+      const duration = moment(endDate,"YYYY-MM-DD").diff(startDate, 'days');
 
+      const month_str = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const month_day_count = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+      
+      let DateDay = parseInt(moment(startDate).format("DD").toString());
+      let DateMonth = month_str[moment(startDate).format("MM") - 1];
+      let DateYear = parseInt(moment(startDate).format("YYYY").toString());
+
+      if (DateYear % 4 == 0) {
+         month_day_count[1] = 29;
+      }
+      //console.log(month_day_count);
+
+      //console.log("End Date: " + endDate);
+      //console.log("Start Date: " + startDate);
+      //console.log("Duration: " + duration);
+      let allEvents = [];
+      let i = 0;
+
+      while (i <= duration) {
+         let path = "T" + DateYear.toString() + DateMonth + (DateDay++).toString();
+         console.log("Path: " + path);
+
+         let bufferEvents = await AsyncStorage.getItem(path);
+         let eventsJson = JSON.parse(bufferEvents);
+         if (!eventsJson == null) {
+            allEvents.push(eventsJson);
+         }
+         ++i;
+      }
+      console.log(allEvents);
+
+      return allEvents;
    }
 
    retrieveRules = async () => {
       const bufferRules = await AsyncStorage.getItem('rules');
 
       let existRules = JSON.parse(bufferRules);
+      console.log(existRules);
       if (existRules) {
-         console.log(existRules);
          return existRules;
       }
    }
