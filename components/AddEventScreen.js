@@ -36,7 +36,6 @@ export default class AddEventScreen extends React.Component {
          maxTime: new Date(),
          location: '',
          description: '',
-         done: false,
 
          show: false,
          mode: 'date',
@@ -137,18 +136,40 @@ export default class AddEventScreen extends React.Component {
    }
 
    /* TODO: Call function to auto-assign date and time*/
+   componentDidMount () {
+      this.autoAssignment();
+   }
 
    autoAssignment = () => {
       const priority = this.state.priority;
       const dueDate = this.state.date;
-      const requiredTime= this.state.requiredTime;
+      const requiredTime = this.state.requiredTime;
       const allowSplit = this.state.split;
 
+      let eachTimeFrame = requiredTime;
+
+      if (allowSplit) {
+         eachTimeFrame = 1;
+      }
+
       /* Check rules and all dates starting from today till due dates */
+      /* let eventSetup = {
+         eventID: this.state.id,
+         eventTitle: this.state.title,
+         eventType: this.state.type,
+         eventPriority: this.state.priority,
+         eventDate: this.state.date,
+         eventMinTime: this.state.minTime,
+         eventMaxTime: this.state.maxTime,
+         eventLocation: this.state.location,
+         eventDescription: this.state.description,
+      }
+      */
 
-      const rules = this.retrieveRules();
-      const events = this.retrieveFullEvent();
+      //const rules = this.retrieveRules();
+      //const events = this.retrieveFullEvent();
 
+      console.log(this.retrieveRules());
    }
 
    retrieveFullEvent = async () => {
@@ -157,27 +178,25 @@ export default class AddEventScreen extends React.Component {
 
       const duration = moment(endDate,"YYYY-MM-DD").diff(startDate, 'days');
 
-      const month_str = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      const month_day_count = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-      
-      let DateDay = parseInt(moment(startDate).format("DD").toString());
-      let DateMonth = month_str[moment(startDate).format("MM") - 1];
-      let DateYear = parseInt(moment(startDate).format("YYYY").toString());
-
-      if (DateYear % 4 == 0) {
-         month_day_count[1] = 29;
-      }
-      //console.log(month_day_count);
-
       //console.log("End Date: " + endDate);
       //console.log("Start Date: " + startDate);
       //console.log("Duration: " + duration);
+
+      const month_str = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      
       let allEvents = [];
       let i = 0;
 
       while (i <= duration) {
-         let path = "T" + DateYear.toString() + DateMonth + (DateDay++).toString();
-         console.log("Path: " + path);
+         const nextDate = moment().add(i, 'd').format("YYYY-MM-DD");
+         //console.log(nextDate);
+   
+         let DateDay = parseInt(moment(nextDate).format("DD").toString());
+         let DateMonth = month_str[moment(nextDate).format("MM") - 1];
+         let DateYear = parseInt(moment(nextDate).format("YYYY").toString());
+
+         let path = "T" + DateYear.toString() + DateMonth + (DateDay).toString();
+         //console.log("Path: " + path);
 
          let bufferEvents = await AsyncStorage.getItem(path);
          let eventsJson = JSON.parse(bufferEvents);
@@ -186,7 +205,7 @@ export default class AddEventScreen extends React.Component {
          }
          ++i;
       }
-      console.log(allEvents);
+      //console.log(allEvents);
 
       return allEvents;
    }
@@ -195,10 +214,11 @@ export default class AddEventScreen extends React.Component {
       const bufferRules = await AsyncStorage.getItem('rules');
 
       let existRules = JSON.parse(bufferRules);
-      console.log(existRules);
-      if (existRules) {
+      //console.log(existRules);
+      if (!existRules == null) {
          return existRules;
       }
+      return [];
    }
 
    saveEvent = async () => {
@@ -212,7 +232,6 @@ export default class AddEventScreen extends React.Component {
          eventMaxTime: this.state.maxTime,
          eventLocation: this.state.location,
          eventDescription: this.state.description,
-         eventDone: this.state.done,
       }
 
       /* Check if rules object exists */
@@ -370,7 +389,7 @@ export default class AddEventScreen extends React.Component {
                      selectedValue={ this.state.requiredTime }
                      onValueChange={ (itemValue) => this.setState({ requiredTime: itemValue }) }
                   >
-                     <Picker.Item label="1" value={1}/>
+                     <Picker.Item label="1 [ *NOT allow to split* ]" value={1}/>
                      <Picker.Item label="2" value={2}/>
                      <Picker.Item label="3" value={3}/>
                      <Picker.Item label="4" value={4}/>
