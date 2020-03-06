@@ -140,7 +140,7 @@ export default class AddEventScreen extends React.Component {
       this.autoAssignment();
    }
 
-   autoAssignment = () => {
+   autoAssignment = async () => {
       const priority = this.state.priority;
       const dueDate = this.state.date;
       const requiredTime = this.state.requiredTime;
@@ -165,11 +165,12 @@ export default class AddEventScreen extends React.Component {
          eventDescription: this.state.description,
       }
       */
+      
+      let rules = await this.retrieveRules();
+      let events = await this.retrieveFullEvent();
 
-      //const rules = this.retrieveRules();
-      //const events = this.retrieveFullEvent();
+      //console.log(events);
 
-      console.log(this.retrieveRules());
    }
 
    retrieveFullEvent = async () => {
@@ -214,8 +215,8 @@ export default class AddEventScreen extends React.Component {
       const bufferRules = await AsyncStorage.getItem('rules');
 
       let existRules = JSON.parse(bufferRules);
-      //console.log(existRules);
-      if (!existRules == null) {
+      if (existRules) {
+         //console.log(existRules);
          return existRules;
       }
       return [];
