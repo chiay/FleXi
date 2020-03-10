@@ -64,9 +64,9 @@ export default class AddEventScreen extends React.Component {
       });
       
       //console.log(this.state.date);
-      console.log(this.state.path);
+      //console.log(this.state.path);
 
-      this.retrieveFullEvent();
+      this.autoAssignment();
    }
 
    setTime = (event, date) => {
@@ -135,14 +135,24 @@ export default class AddEventScreen extends React.Component {
       
    }
 
-   /* TODO: Call function to auto-assign date and time*/
-   componentDidMount () {
-      this.autoAssignment();
+   randomTime = (max) => (Math.floor(Math.random() * Math.floor(max)));
+
+   checkTime = (minT, maxT, tVal) => {
+      let dayAllow = []
+      for (let i = 0; i < minT.length; ++i) {
+         if (minT[i] >= tVal && maxT[i] <= tVal - 1) {
+            dayAllow.push(false);
+            break;
+         }
+         dayAllow.push(true);
+      }
+      return dayAllow;
    }
 
+   /* TODO: Call function to auto-assign date and time*/
+
    autoAssignment = async () => {
-      const priority = this.state.priority;
-      const dueDate = this.state.date;
+      let priority = this.state.priority;
       const requiredTime = this.state.requiredTime;
       const allowSplit = this.state.split;
 
@@ -166,10 +176,84 @@ export default class AddEventScreen extends React.Component {
       }
       */
       
-      let rules = await this.retrieveRules();
-      let events = await this.retrieveFullEvent();
+      const rules = await this.retrieveRules();
+      const events = await this.retrieveFullEvent(); // Length of events = days
 
-      //console.log(events);
+      console.log(events.length);
+      //console.log(rules.length);
+
+      const duration = events.length;
+
+      const startDate = moment().format();
+
+      let timeMinScheduled = [];
+      let timeMaxScheduled = [];
+      let timeMinBuffer = [];
+      let timeMaxBuffer = [];
+      let t1 = 0.0;
+      let t2 = 0.0;
+      let ppDay = 0;
+      let totalPriority = [];
+
+      for (let i = 0; i < duration; ++i) {
+         timeMinBuffer = [];
+         timeMaxBuffer = [];
+         ppDay = 0;
+         for (let j = 0; j < events[i].length; ++j) {
+            t1 = parseFloat(events[i][j].eventMinTime.split(' ')[0]);
+            t2 = parseFloat(events[i][j].eventMaxTime.split(' ')[0]);
+
+            if (events[i][j].eventMinTime.split(' ')[1] === 'pm' && t1 < 12.00) {
+               t1 += 12;
+            }
+            if (events[i][j].eventMaxTime.split(' ')[1] === 'pm' && t2 < 12.00) {
+               t2 += 12;
+            }
+
+            timeMinBuffer.push(t1);
+            timeMaxBuffer.push(t2);
+
+            ppDay += events[i][j].eventPriority;
+         }
+         timeMinScheduled.push(timeMinBuffer);
+         timeMaxScheduled.push(timeMaxBuffer);
+
+         totalPriority.push(ppDay);
+      }
+
+      console.log(timeMinScheduled);
+      console.log(timeMaxScheduled);
+
+      console.log(totalPriority);
+
+      if (priority === null)
+         priority = 0;
+      
+      let p = 0;
+      let count = 20;
+      let isAllowed = false;
+
+      for (let i = 0; i < duration; ++i) {   // Per day
+         if (priority / totalPriority[i] < 1) {
+            p = priority / totalPriority[i] * 100;
+         } else {
+            p = priority / totalPriority[i];
+         }
+         if (p < 15) {
+            while (count >= 0 || !isAllowed) {
+               let rTime = this.randomTime(25);
+               let ct = this.checkTime(timeMinScheduled[i], timeMaxScheduled[i], rTime);
+               if (ct.indexOf(true) !== -1) {
+                  isAllowed = true;
+               } else {
+                  // Unable to get time to assign
+               }
+               --count;
+            }
+         } else {
+            break;
+         }
+      }
 
    }
 
@@ -201,7 +285,7 @@ export default class AddEventScreen extends React.Component {
 
          let bufferEvents = await AsyncStorage.getItem(path);
          let eventsJson = JSON.parse(bufferEvents);
-         if (!eventsJson == null) {
+         if (eventsJson) {
             allEvents.push(eventsJson);
          }
          ++i;
@@ -301,11 +385,11 @@ export default class AddEventScreen extends React.Component {
                   selectedValue={ this.state.priority }
                   onValueChange={ (itemValue) => this.setState({ priority: itemValue }) }
                >
-                  <Picker.Item label="Low" value="Low"/>
-                  <Picker.Item label="Average" value="Average"/>
-                  <Picker.Item label="Normal" value="Normal"/>
-                  <Picker.Item label="High" value="High"/>
-                  <Picker.Item label="Urgent" value="Urgent"/>
+                  <Picker.Item label="Low" value={1}/>
+                  <Picker.Item label="Average" value={2}/>
+                  <Picker.Item label="Normal" value={3}/>
+                  <Picker.Item label="High" value={4}/>
+                  <Picker.Item label="Urgent" value={5}/>
                   
                </Picker>
                
