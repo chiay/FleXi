@@ -29,8 +29,8 @@ export default class AddEventScreen extends React.Component {
       this.state = {
          id: 0,
          title: '',
-         type: '',
-         priority: '',
+         type: 'Event',
+         priority: 1,
          date: new Date(),
          minTime: new Date(),
          maxTime: new Date(),
@@ -47,7 +47,7 @@ export default class AddEventScreen extends React.Component {
          autoAssign: false,
          toggleSwitch: false,
          showDateTime: true,
-         requiredTime: 0,
+         requiredTime: 1,
          split: false,
       };
 
@@ -66,7 +66,7 @@ export default class AddEventScreen extends React.Component {
       //console.log(this.state.date);
       //console.log(this.state.path);
 
-      this.autoAssignment();
+      //this.autoAssignment();
    }
 
    setTime = (event, date) => {
@@ -126,6 +126,7 @@ export default class AddEventScreen extends React.Component {
          this.setState({
             toggleSwitch: !toggled,
             showDateTime: !this.state.showDateTime,
+            autoAssign: !this.state.autoAssign,
          });
       } else if(opt === 'sp') {
          this.setState({
@@ -135,7 +136,19 @@ export default class AddEventScreen extends React.Component {
       
    }
 
-   randomTime = (max) => (Math.floor(Math.random() * Math.floor(max)));
+   randomTime = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+   formatTime = (t) => {
+      if (t >= 1 && t < 12) {
+         return t.toString() + '.00 am';
+      } else if (t > 12 && t < 24) {
+         return (t-12).toString() + '.00 pm';
+      } else if (t === 12) {
+         return '12.00 pm';
+      } else if (t >= 24) {
+         return (24-t).toString() + '.00 am'; 
+      }
+   }
 
    checkTime = (minT, maxT, tVal) => {
       let dayAllow = []
@@ -179,12 +192,10 @@ export default class AddEventScreen extends React.Component {
       const rules = await this.retrieveRules();
       const events = await this.retrieveFullEvent(); // Length of events = days
 
-      console.log(events.length);
+      //console.log(events);
       //console.log(rules.length);
 
       const duration = events.length;
-
-      const startDate = moment().format();
 
       let timeMinScheduled = [];
       let timeMaxScheduled = [];
@@ -221,10 +232,10 @@ export default class AddEventScreen extends React.Component {
          totalPriority.push(ppDay);
       }
 
-      console.log(timeMinScheduled);
-      console.log(timeMaxScheduled);
+      //console.log(timeMinScheduled);
+      //console.log(timeMaxScheduled);
 
-      console.log(totalPriority);
+      //console.log(totalPriority);
 
       if (priority === null)
          priority = 0;
@@ -232,6 +243,8 @@ export default class AddEventScreen extends React.Component {
       let p = 0;
       let count = 20;
       let isAllowed = false;
+      let rTime = 0;
+      const month_str = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
       for (let i = 0; i < duration; ++i) {   // Per day
          if (priority / totalPriority[i] < 1) {
@@ -241,16 +254,34 @@ export default class AddEventScreen extends React.Component {
          }
          if (p < 15) {
             while (count >= 0 || !isAllowed) {
-               let rTime = this.randomTime(25);
+               //rTime = this.randomTime(0, 24);
+               if (i === 0) {
+                  rTime = this.randomTime(parseInt(moment().format('DD')), 24);
+               } else {
+                  rTime = this.randomTime(0, 24);
+               }
+               
                let ct = this.checkTime(timeMinScheduled[i], timeMaxScheduled[i], rTime);
                if (ct.indexOf(true) !== -1) {
                   isAllowed = true;
+                  let assignedDate = moment().add(i, 'd').format("YYYY-MM-DD");
+                  this.setState({
+                     date: assignedDate,
+                     minTime: this.formatTime(rTime),
+                     maxTime: this.formatTime(rTime + requiredTime),
+                     path: 'T' + moment(assignedDate).format('YYYY').toString() + month_str[parseInt(moment(assignedDate).format('MM')) - 1] + parseInt(moment(assignedDate).format('DD')).toString(),
+                  });
+                  console.log('Date: ' + this.state.date);
+                  console.log('MinTime: ' + this.state.minTime);
+                  console.log('MaxTime: ' + this.state.maxTime);
+                  this.saveEvent();
                   break;
                } else {
                   // Unable to get time to assign
                }
                --count;
             }
+            break;
          } else {
             break;
          }
@@ -515,7 +546,7 @@ export default class AddEventScreen extends React.Component {
                />
 
                <View style={ styles.buttonContainer }>
-                  <View style={ styles.buttonStyle }><Button title="Done" onPress={ () => this.saveEvent() } /></View>
+                  <View style={ styles.buttonStyle }><Button title="Done" onPress={ () => this.state.autoAssign === false ? this.saveEvent() : this.autoAssignment() } /></View>
                   <View style={ styles.buttonStyle }><Button title="Discard" onPress={ () => this.props.navigation.goBack(null) } /></View>
                </View>
             </ScrollView>
