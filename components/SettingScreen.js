@@ -27,7 +27,7 @@ export default class SettingScreen extends React.Component {
          <FlatList
             data={[
                   {key: 'Rules'},
-                  {key: 'Notifications'},
+                  /*{key: 'Notifications'},*/
                   ]}
             renderItem={ ({ item }) => <TouchableOpacity onPress={ () => this.props.navigation.navigate( item.key ) }><Text style={ styles.item }>{ item.key }</Text></TouchableOpacity> }
             ItemSeparatorComponent={ this.renderSeparator }

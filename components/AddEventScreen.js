@@ -245,6 +245,7 @@ export default class AddEventScreen extends React.Component {
                let ct = this.checkTime(timeMinScheduled[i], timeMaxScheduled[i], rTime);
                if (ct.indexOf(true) !== -1) {
                   isAllowed = true;
+                  break;
                } else {
                   // Unable to get time to assign
                }

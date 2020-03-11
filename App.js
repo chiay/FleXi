@@ -94,10 +94,10 @@ const StackNavigator = createStackNavigator({
          },
       },
    },
-   Notifications: {
+   /*Notifications: {
       screen: flexiNotification,
       title: "Notifications",
-   },
+   },*/
    AddEvent: {
       screen: flexiAddEvent,
       title: "AddEvent",
