@@ -66,7 +66,7 @@ export default class AddEventScreen extends React.Component {
       //console.log(this.state.date);
       //console.log(this.state.path);
 
-      //this.autoAssignment();
+      this.autoAssignment();
    }
 
    setTime = (event, date) => {
@@ -165,37 +165,18 @@ export default class AddEventScreen extends React.Component {
    /* TODO: Call function to auto-assign date and time*/
 
    autoAssignment = async () => {
-      let priority = this.state.priority;
+      const priority = this.state.priority;
       const requiredTime = this.state.requiredTime;
       const allowSplit = this.state.split;
-
-      let eachTimeFrame = requiredTime;
-
-      if (allowSplit) {
-         eachTimeFrame = 1;
-      }
-
-      /* Check rules and all dates starting from today till due dates */
-      /* let eventSetup = {
-         eventID: this.state.id,
-         eventTitle: this.state.title,
-         eventType: this.state.type,
-         eventPriority: this.state.priority,
-         eventDate: this.state.date,
-         eventMinTime: this.state.minTime,
-         eventMaxTime: this.state.maxTime,
-         eventLocation: this.state.location,
-         eventDescription: this.state.description,
-      }
-      */
       
       const rules = await this.retrieveRules();
       const events = await this.retrieveFullEvent(); // Length of events = days
 
       //console.log(events);
-      //console.log(rules.length);
+      //console.log(rules);
 
       const duration = events.length;
+      const numOfRules = rules.length;
 
       let timeMinScheduled = [];
       let timeMaxScheduled = [];
@@ -226,6 +207,28 @@ export default class AddEventScreen extends React.Component {
 
             ppDay += events[i][j].eventPriority;
          }
+
+         for (let n = 0; n < numOfRules; ++n) {
+            let ruleMinTime = rules[n].ruleMinTime.split(' ')[0];
+            let ruleMaxTime = rules[n].ruleMaxTime.split(' ')[0];
+            let ruleMinPeriod = rules[n].ruleMinTime.split(' ')[1];
+            let ruleMaxPeriod = rules[n].ruleMaxTime.split(' ')[1];
+            if (!rules[n].ruleAssignment) {
+               if (ruleMinPeriod === 'pm' && ruleMaxPeriod === 'am') {
+                  timeMinBuffer.push(parseFloat(ruleMinTime) + 12.00);
+                  timeMaxBuffer.push(23.59);
+                  timeMinBuffer.push(0);
+                  timeMaxBuffer.push(parseFloat(ruleMaxTime));
+               } else if (ruleMinPeriod === 'am' && ruleMaxPeriod === 'pm') {
+                  timeMinBuffer.push(parseFloat(ruleMinTime));
+                  timeMinBuffer.push(parseFloat(ruleMaxTime) + 12.00);
+               } else {
+                  timeMinBuffer.push(parseFloat(ruleMinTime));
+                  timeMinBuffer.push(parseFloat(ruleMaxTime));
+               }
+            }
+         }
+
          timeMinScheduled.push(timeMinBuffer);
          timeMaxScheduled.push(timeMaxBuffer);
 
@@ -236,12 +239,9 @@ export default class AddEventScreen extends React.Component {
       //console.log(timeMaxScheduled);
 
       //console.log(totalPriority);
-
-      if (priority === null)
-         priority = 0;
       
       let p = 0;
-      let count = 20;
+      let count = 30;
       let isAllowed = false;
       let rTime = 0;
       const month_str = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -256,7 +256,7 @@ export default class AddEventScreen extends React.Component {
             while (count >= 0 || !isAllowed) {
                //rTime = this.randomTime(0, 24);
                if (i === 0) {
-                  rTime = this.randomTime(parseInt(moment().format('DD')), 24);
+                  rTime = this.randomTime(parseInt(moment().format('HH')), 24);
                } else {
                   rTime = this.randomTime(0, 24);
                }
@@ -271,10 +271,10 @@ export default class AddEventScreen extends React.Component {
                      maxTime: this.formatTime(rTime + requiredTime),
                      path: 'T' + moment(assignedDate).format('YYYY').toString() + month_str[parseInt(moment(assignedDate).format('MM')) - 1] + parseInt(moment(assignedDate).format('DD')).toString(),
                   });
-                  console.log('Date: ' + this.state.date);
-                  console.log('MinTime: ' + this.state.minTime);
-                  console.log('MaxTime: ' + this.state.maxTime);
-                  this.saveEvent();
+                  //console.log('Date: ' + this.state.date);
+                  //console.log('MinTime: ' + this.state.minTime);
+                  //console.log('MaxTime: ' + this.state.maxTime);
+                  //this.saveEvent();
                   break;
                } else {
                   // Unable to get time to assign
@@ -286,7 +286,6 @@ export default class AddEventScreen extends React.Component {
             break;
          }
       }
-
    }
 
    retrieveFullEvent = async () => {
