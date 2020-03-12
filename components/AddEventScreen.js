@@ -139,25 +139,28 @@ export default class AddEventScreen extends React.Component {
    randomTime = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
    formatTime = (t) => {
-      if (t >= 1 && t < 12) {
+      if (t >= 0 && t < 12) {
          return t.toString() + '.00 am';
       } else if (t > 12 && t < 24) {
          return (t-12).toString() + '.00 pm';
       } else if (t === 12) {
          return '12.00 pm';
       } else if (t >= 24) {
-         return (24-t).toString() + '.00 am'; 
+         return (t-24).toString() + '.00 am'; 
       }
    }
 
    checkTime = (minT, maxT, tVal) => {
-      let dayAllow = []
+      let dayAllow = [];
+      console.log(minT);
+      console.log(maxT);
+      console.log(tVal);
       for (let i = 0; i < minT.length; ++i) {
-         if (minT[i] >= tVal && maxT[i] <= tVal - 1) {
+         if (minT[i] >= tVal + 0.00 && maxT[i] <= tVal - 1.00) {
             dayAllow.push(false);
-            break;
+         } else {
+            dayAllow.push(true);
          }
-         dayAllow.push(true);
       }
       return dayAllow;
    }
@@ -168,6 +171,8 @@ export default class AddEventScreen extends React.Component {
       const priority = this.state.priority;
       const requiredTime = this.state.requiredTime;
       const allowSplit = this.state.split;
+
+      console.log(allowSplit);
       
       const rules = await this.retrieveRules();
       const events = await this.retrieveFullEvent(); // Length of events = days
@@ -244,7 +249,9 @@ export default class AddEventScreen extends React.Component {
       let count = 30;
       let isAllowed = false;
       let rTime = 0;
+      let assignedDate = 0;
       const month_str = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      let splitCount = requiredTime;
 
       for (let i = 0; i < duration; ++i) {   // Per day
          if (priority / totalPriority[i] < 1) {
@@ -253,36 +260,42 @@ export default class AddEventScreen extends React.Component {
             p = priority / totalPriority[i];
          }
          if (p < 15) {
-            while (count >= 0 || !isAllowed) {
+            while ((count >= 0 || !isAllowed) && splitCount > 0) {
                //rTime = this.randomTime(0, 24);
                if (i === 0) {
                   rTime = this.randomTime(parseInt(moment().format('HH')), 24);
                } else {
                   rTime = this.randomTime(0, 24);
                }
+               console.log(rTime);
                
                let ct = this.checkTime(timeMinScheduled[i], timeMaxScheduled[i], rTime);
+               console.log(ct);
                if (ct.indexOf(true) !== -1) {
                   isAllowed = true;
-                  let assignedDate = moment().add(i, 'd').format("YYYY-MM-DD");
+                  if (allowSplit) {
+                     assignedDate = moment().add(i + (requiredTime - splitCount), 'd').format("YYYY-MM-DD");
+                     --splitCount;
+                  } else {
+                     splitCount -= requiredTime;
+                     assignedDate = moment().add(i, 'd').format("YYYY-MM-DD");
+                  }
+                  //assignedDate = moment().add(i, 'd').format("YYYY-MM-DD");
                   this.setState({
                      date: assignedDate,
                      minTime: this.formatTime(rTime),
-                     maxTime: this.formatTime(rTime + requiredTime),
+                     maxTime: !allowSplit ? this.formatTime(rTime + requiredTime) : this.formatTime(rTime + 1),
                      path: 'T' + moment(assignedDate).format('YYYY').toString() + month_str[parseInt(moment(assignedDate).format('MM')) - 1] + parseInt(moment(assignedDate).format('DD')).toString(),
                   });
-                  //console.log('Date: ' + this.state.date);
-                  //console.log('MinTime: ' + this.state.minTime);
-                  //console.log('MaxTime: ' + this.state.maxTime);
-                  //this.saveEvent();
-                  break;
+                  console.log('Date: ' + this.state.date);
+                  console.log('MinTime: ' + this.state.minTime);
+                  console.log('MaxTime: ' + this.state.maxTime);
+                  //await this.saveEvent();
                } else {
                   // Unable to get time to assign
                }
                --count;
             }
-            break;
-         } else {
             break;
          }
       }

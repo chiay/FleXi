@@ -176,7 +176,7 @@ class HomeScreen extends React.Component {
                </View>
                <View>
                   <Text style={ styles.remain }>
-                     Total task(s) for today: { this.state.taskRemain }
+                     Total task(s) this today: { this.state.taskRemain }
                   </Text>
                </View> 
             </View>
