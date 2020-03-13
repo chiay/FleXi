@@ -66,7 +66,7 @@ export default class AddEventScreen extends React.Component {
       //console.log(this.state.date);
       //console.log(this.state.path);
 
-      this.autoAssignment();
+      //this.autoAssignment();
    }
 
    setTime = (event, date) => {
@@ -264,10 +264,10 @@ export default class AddEventScreen extends React.Component {
                } else {
                   rTime = this.randomTime(0, 24);
                }
-               console.log(rTime);
+               //console.log(rTime);
                
                let ct = this.checkTime(timeMinScheduled[i], timeMaxScheduled[i], rTime);
-               console.log(ct);
+               //console.log(ct);
                if (ct) {
                   isAllowed = true;
                   if (allowSplit) {
@@ -287,7 +287,7 @@ export default class AddEventScreen extends React.Component {
                   //console.log('Date: ' + this.state.date);
                   //console.log('MinTime: ' + this.state.minTime);
                   //console.log('MaxTime: ' + this.state.maxTime);
-                  //await this.saveEvent();
+                  await this.saveEvent();
                } else {
                   // Unable to get time to assign
                }
