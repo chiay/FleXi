@@ -17,7 +17,7 @@ class HomeScreen extends React.Component {
    constructor(props) {
       super(props);
       this.state = {
-         date: '',
+         date: moment().format(),
          taskRemain: 0,
          events: [],
 
@@ -40,9 +40,9 @@ class HomeScreen extends React.Component {
    setToday = () => {
       this.setState({ isLoading: true, });
 
-      const date = new Date().getDate();
-      const month = new Date().getMonth();
-      const year = new Date().getFullYear();
+      const date = moment().format('DD');
+      const month = moment().format('MM') - 1;
+      const year = moment().format('YYYY');
       const month_str = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
       const path = 'T' + year.toString() + month_str[month] + date.toString();
@@ -176,7 +176,7 @@ class HomeScreen extends React.Component {
                </View>
                <View>
                   <Text style={ styles.remain }>
-                     Total task(s) this today: { this.state.taskRemain }
+                     Total task(s) on this day: { this.state.taskRemain }
                   </Text>
                </View> 
             </View>

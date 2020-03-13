@@ -151,18 +151,15 @@ export default class AddEventScreen extends React.Component {
    }
 
    checkTime = (minT, maxT, tVal) => {
-      let dayAllow = [];
-      console.log(minT);
-      console.log(maxT);
-      console.log(tVal);
+      //console.log(minT);
+      //console.log(maxT);
+      //console.log(tVal);
       for (let i = 0; i < minT.length; ++i) {
-         if (minT[i] >= tVal + 0.00 && maxT[i] <= tVal - 1.00) {
-            dayAllow.push(false);
-         } else {
-            dayAllow.push(true);
+         if (tVal >= minT[i] + 0.00 && tVal <= maxT[i] - 1.00) {
+            return false;
          }
       }
-      return dayAllow;
+      return true;
    }
 
    /* TODO: Call function to auto-assign date and time*/
@@ -172,7 +169,7 @@ export default class AddEventScreen extends React.Component {
       const requiredTime = this.state.requiredTime;
       const allowSplit = this.state.split;
 
-      console.log(allowSplit);
+      //console.log(allowSplit);
       
       const rules = await this.retrieveRules();
       const events = await this.retrieveFullEvent(); // Length of events = days
@@ -271,7 +268,7 @@ export default class AddEventScreen extends React.Component {
                
                let ct = this.checkTime(timeMinScheduled[i], timeMaxScheduled[i], rTime);
                console.log(ct);
-               if (ct.indexOf(true) !== -1) {
+               if (ct) {
                   isAllowed = true;
                   if (allowSplit) {
                      assignedDate = moment().add(i + (requiredTime - splitCount), 'd').format("YYYY-MM-DD");
@@ -287,9 +284,9 @@ export default class AddEventScreen extends React.Component {
                      maxTime: !allowSplit ? this.formatTime(rTime + requiredTime) : this.formatTime(rTime + 1),
                      path: 'T' + moment(assignedDate).format('YYYY').toString() + month_str[parseInt(moment(assignedDate).format('MM')) - 1] + parseInt(moment(assignedDate).format('DD')).toString(),
                   });
-                  console.log('Date: ' + this.state.date);
-                  console.log('MinTime: ' + this.state.minTime);
-                  console.log('MaxTime: ' + this.state.maxTime);
+                  //console.log('Date: ' + this.state.date);
+                  //console.log('MinTime: ' + this.state.minTime);
+                  //console.log('MaxTime: ' + this.state.maxTime);
                   //await this.saveEvent();
                } else {
                   // Unable to get time to assign
